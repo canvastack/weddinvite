@@ -40,6 +40,13 @@ const MapDisplay = ({ center, locations, selectedEventId }: MapDisplayProps) => 
     }
   }, [selectedEventId]);
 
+  useEffect(() => {
+    // Update map center when selectedEventId changes
+    if (mapRef.current) {
+      mapRef.current.setView(center, 13);
+    }
+  }, [center, selectedEventId]);
+
   const filteredLocations = locations.filter(
     location => location.id === selectedEventId || location.type !== 'venue'
   );
@@ -59,7 +66,7 @@ const MapDisplay = ({ center, locations, selectedEventId }: MapDisplayProps) => 
       />
       {filteredLocations.map((location) => (
         <Marker
-          key={`${selectedEventId}-${location.id}`}
+          key={location.id}
           position={[location.latitude, location.longitude]}
         >
           <Popup>
