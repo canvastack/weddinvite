@@ -280,32 +280,41 @@ const MapManager = () => {
               </div>
 
               <div className="h-64 rounded-lg overflow-hidden">
-                <MapContainer
-                  center={selectedEventData ? [selectedEventData.venue_latitude, selectedEventData.venue_longitude] : [-6.2088, 106.8456]}
-                  zoom={13}
-                  className="h-full w-full"
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  {locations.map((location) => (
-                    <Marker
-                      key={location.id}
-                      position={[location.latitude, location.longitude]}
-                    >
-                      <Popup>
-                        <div>
-                          <h3 className="font-medium">{location.name}</h3>
-                          <p className="text-sm text-gray-600">{location.address}</p>
-                          {location.description && (
-                            <p className="text-sm text-gray-500 mt-1">{location.description}</p>
-                          )}
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
+                {selectedEventData ? (
+                  <MapContainer
+                    center={[selectedEventData.venue_latitude, selectedEventData.venue_longitude]}
+                    zoom={13}
+                    className="h-full w-full"
+                    key={selectedEvent}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    {locations
+                      .filter(location => location.id === selectedEvent || location.type !== 'venue')
+                      .map((location) => (
+                        <Marker
+                          key={location.id}
+                          position={[location.latitude, location.longitude]}
+                        >
+                          <Popup>
+                            <div>
+                              <h3 className="font-medium">{location.name}</h3>
+                              <p className="text-sm text-gray-600">{location.address}</p>
+                              {location.description && (
+                                <p className="text-sm text-gray-500 mt-1">{location.description}</p>
+                              )}
+                            </div>
+                          </Popup>
+                        </Marker>
+                      ))}
+                  </MapContainer>
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg">
+                    <p className="text-muted-foreground">Pilih acara untuk menampilkan peta</p>
+                  </div>
+                )}
               </div>
 
               {selectedEventData && (
