@@ -10,11 +10,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { 
   MapPinIcon, 
   PlusIcon, 
-  NavigationIcon,
+  ArrowTopRightOnSquareIcon,
   ClockIcon,
   TruckIcon,
-  CarIcon,
-  BikeIcon
+  HomeIcon,
+  CogIcon
 } from '@heroicons/react/24/outline';
 import { mockEvents } from '@/data/mockEvents';
 import { mockDistanceCalculations } from '@/data/mockDistance';
@@ -216,7 +216,7 @@ const MapManager = () => {
         <Card className="elegant-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <NavigationIcon className="h-5 w-5" />
+              <ArrowTopRightOnSquareIcon className="h-5 w-5" />
               Estimasi Jarak & Waktu
             </CardTitle>
             <CardDescription>
@@ -239,7 +239,7 @@ const MapManager = () => {
                   
                   <div className="grid grid-cols-3 gap-2">
                     <div className="text-center p-2 bg-muted/30 rounded">
-                      <BikeIcon className="h-4 w-4 mx-auto mb-1 text-green-600" />
+                      <CogIcon className="h-4 w-4 mx-auto mb-1 text-green-600" />
                       <p className="text-xs font-medium">Motor</p>
                       <p className="text-xs text-muted-foreground">
                         {data.travel_time_minutes.motorcycle} min
@@ -247,7 +247,7 @@ const MapManager = () => {
                     </div>
                     
                     <div className="text-center p-2 bg-muted/30 rounded">
-                      <CarIcon className="h-4 w-4 mx-auto mb-1 text-blue-600" />
+                      <HomeIcon className="h-4 w-4 mx-auto mb-1 text-blue-600" />
                       <p className="text-xs font-medium">Mobil</p>
                       <p className="text-xs text-muted-foreground">
                         {data.travel_time_minutes.car} min
@@ -310,7 +310,7 @@ const MapManager = () => {
                     Lihat di Peta
                   </Button>
                   <Button size="sm" variant="outline">
-                    <NavigationIcon className="h-4 w-4 mr-1" />
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-1" />
                     Hitung Jarak
                   </Button>
                 </div>
