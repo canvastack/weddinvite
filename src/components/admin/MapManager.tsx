@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,12 +35,23 @@ interface Location {
   description?: string;
 }
 
+// Loading component for the map
+const MapLoading = () => (
+  <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+      <p className="text-sm text-muted-foreground">Memuat peta...</p>
+    </div>
+  </div>
+);
+
 const MapManager = () => {
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<string>('');
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [mapError, setMapError] = useState(false);
 
   // Default center for Jakarta area
   const defaultCenter: [number, number] = [-6.2088, 106.8456];
@@ -278,11 +290,13 @@ const MapManager = () => {
               </div>
 
               <div className="h-64 rounded-lg overflow-hidden">
-                <MapDisplay
-                  center={mapCenter}
-                  locations={locations}
-                  selectedEventId={selectedEvent}
-                />
+                <Suspense fallback={<MapLoading />}>
+                  <MapDisplay
+                    center={mapCenter}
+                    locations={locations}
+                    selectedEventId={selectedEvent}
+                  />
+                </Suspense>
               </div>
 
               {selectedEventData ? (
