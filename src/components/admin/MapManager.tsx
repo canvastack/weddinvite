@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,16 +22,7 @@ import { mockEvents } from '@/data/mockEvents';
 import { mockDistanceCalculations } from '@/data/mockDistance';
 import { mockGuests } from '@/data/mockGuests';
 import { useToast } from '@/hooks/use-toast';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import MapDisplay from './MapDisplay';
 
 interface Location {
   id: string;
@@ -281,35 +271,11 @@ const MapManager = () => {
 
               <div className="h-64 rounded-lg overflow-hidden">
                 {selectedEventData ? (
-                  <MapContainer
+                  <MapDisplay
                     center={[selectedEventData.venue_latitude, selectedEventData.venue_longitude]}
-                    zoom={13}
-                    className="h-full w-full"
-                    key={selectedEvent}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    {locations
-                      .filter(location => location.id === selectedEvent || location.type !== 'venue')
-                      .map((location) => (
-                        <Marker
-                          key={location.id}
-                          position={[location.latitude, location.longitude]}
-                        >
-                          <Popup>
-                            <div>
-                              <h3 className="font-medium">{location.name}</h3>
-                              <p className="text-sm text-gray-600">{location.address}</p>
-                              {location.description && (
-                                <p className="text-sm text-gray-500 mt-1">{location.description}</p>
-                              )}
-                            </div>
-                          </Popup>
-                        </Marker>
-                      ))}
-                  </MapContainer>
+                    locations={locations}
+                    selectedEventId={selectedEvent}
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg">
                     <p className="text-muted-foreground">Pilih acara untuk menampilkan peta</p>
