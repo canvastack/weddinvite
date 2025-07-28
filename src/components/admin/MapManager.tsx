@@ -22,7 +22,7 @@ import {
 import { mockEvents } from '@/data/mockEvents';
 import { mockDistanceCalculations } from '@/data/mockDistance';
 import { mockGuests } from '@/data/mockGuests';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -45,6 +45,7 @@ interface Location {
 }
 
 const MapManager = () => {
+  const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<string>('');
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
