@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +22,7 @@ import {
 import { mockEvents } from '@/data/mockEvents';
 import { mockDistanceCalculations } from '@/data/mockDistance';
 import { mockGuests } from '@/data/mockGuests';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -50,7 +49,6 @@ const MapManager = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Convert events to locations
