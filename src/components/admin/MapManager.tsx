@@ -41,6 +41,9 @@ const MapManager = () => {
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
+  // Default center for Jakarta area
+  const defaultCenter: [number, number] = [-6.2088, 106.8456];
+
   useEffect(() => {
     // Convert events to locations
     const eventLocations: Location[] = mockEvents.map(event => ({
@@ -131,6 +134,11 @@ const MapManager = () => {
 
   const distanceData = getDistanceData();
   const selectedEventData = mockEvents.find(e => e.id === selectedEvent);
+
+  // Get map center - use selected event or default
+  const mapCenter = selectedEventData 
+    ? [selectedEventData.venue_latitude, selectedEventData.venue_longitude] as [number, number]
+    : defaultCenter;
 
   return (
     <div className="space-y-6">
@@ -270,20 +278,14 @@ const MapManager = () => {
               </div>
 
               <div className="h-64 rounded-lg overflow-hidden">
-                {selectedEventData ? (
-                  <MapDisplay
-                    center={[selectedEventData.venue_latitude, selectedEventData.venue_longitude]}
-                    locations={locations}
-                    selectedEventId={selectedEvent}
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg">
-                    <p className="text-muted-foreground">Pilih acara untuk menampilkan peta</p>
-                  </div>
-                )}
+                <MapDisplay
+                  center={mapCenter}
+                  locations={locations}
+                  selectedEventId={selectedEvent}
+                />
               </div>
 
-              {selectedEventData && (
+              {selectedEventData ? (
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <h3 className="font-medium mb-2">{selectedEventData.title}</h3>
                   <p className="text-sm text-muted-foreground mb-1">
@@ -296,6 +298,12 @@ const MapManager = () => {
                     <MapPinIcon className="h-4 w-4" />
                     <span>{selectedEventData.venue_latitude}, {selectedEventData.venue_longitude}</span>
                   </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Pilih acara untuk melihat detail lokasi
+                  </p>
                 </div>
               )}
             </div>
