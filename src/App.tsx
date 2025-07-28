@@ -12,6 +12,10 @@ import GuestManagement from "./pages/admin/GuestManagement";
 import EmailBlastManager from "./components/admin/EmailBlastManager";
 import MapManager from "./components/admin/MapManager";
 import UserManagement from "./components/admin/UserManagement";
+import EventManagement from "./pages/admin/EventManagement";
+import ThemeEditor from "./pages/admin/ThemeEditor";
+import Analytics from "./pages/admin/Analytics";
+import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +34,11 @@ const App = () => (
             <Route path="guests" element={<GuestManagement />} />
             <Route path="email" element={<EmailBlastManager />} />
             <Route path="map" element={<MapManager />} />
+            <Route path="events" element={<EventManagement />} />
+            <Route path="theme" element={<ThemeEditor />} />
+            <Route path="analytics" element={<Analytics />} />
             <Route path="users" element={<UserManagement />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           
           {/* Catch-all route */}

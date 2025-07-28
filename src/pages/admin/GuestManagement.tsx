@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,11 +19,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { mockGuests, Guest } from '@/data/mockGuests';
 import { useToast } from '@/hooks/use-toast';
+import GuestDetailView from '@/components/admin/GuestDetailView';
 
 const GuestManagement = () => {
   const [guests, setGuests] = useState<Guest[]>(mockGuests);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const [viewingGuest, setViewingGuest] = useState<Guest | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const { toast } = useToast();
@@ -37,6 +38,10 @@ const GuestManagement = () => {
   const handleEditGuest = (guest: Guest) => {
     setEditingGuest(guest);
     setIsDialogOpen(true);
+  };
+
+  const handleViewGuest = (guest: Guest) => {
+    setViewingGuest(guest);
   };
 
   const handleDeleteGuest = (guestId: string) => {
@@ -368,7 +373,11 @@ const GuestManagement = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleViewGuest(guest)}
+                    >
                       <EyeIcon className="h-4 w-4" />
                     </Button>
                     <Button 
@@ -393,6 +402,13 @@ const GuestManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Guest Detail View Modal */}
+      <GuestDetailView
+        guest={viewingGuest}
+        isOpen={!!viewingGuest}
+        onClose={() => setViewingGuest(null)}
+      />
     </div>
   );
 };
