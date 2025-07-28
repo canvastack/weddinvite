@@ -15,7 +15,7 @@ import {
   GlobeAltIcon,
   UserIcon,
   KeyIcon,
-  DatabaseIcon
+  CircleStackIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
 
@@ -438,7 +438,7 @@ const Settings = () => {
           <Card className="elegant-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DatabaseIcon className="h-5 w-5" />
+                <CircleStackIcon className="h-5 w-5" />
                 Pengaturan Backup
               </CardTitle>
               <CardDescription>

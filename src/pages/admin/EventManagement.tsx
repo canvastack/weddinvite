@@ -17,7 +17,6 @@ import {
   ClockIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
-import { mockEvents } from '@/data/mockEvents';
 import { useToast } from '@/hooks/use-toast';
 
 interface Event {
@@ -42,6 +41,50 @@ interface Event {
 }
 
 const EventManagement = () => {
+  // Create initial mock events that match the Event interface
+  const mockEvents: Event[] = [
+    {
+      id: '1',
+      title: 'Akad Nikah',
+      event_type: 'akad',
+      venue_name: 'Masjid Al-Ikhlas',
+      venue_address: 'Jl. Raya Bekasi No. 123, Bekasi',
+      venue_city: 'Bekasi',
+      venue_province: 'Jawa Barat',
+      venue_latitude: -6.2088,
+      venue_longitude: 107.0456,
+      event_date: '2024-02-14',
+      start_time: '08:00',
+      end_time: '10:00',
+      description: 'Akad nikah akan dilaksanakan di Masjid Al-Ikhlas',
+      dress_code: 'Formal',
+      contact_person: 'Pak Ahmad',
+      contact_phone: '+62 812-3456-7890',
+      created_at: '2024-01-15T08:00:00Z',
+      updated_at: '2024-01-15T08:00:00Z'
+    },
+    {
+      id: '2',
+      title: 'Resepsi Pernikahan',
+      event_type: 'resepsi',
+      venue_name: 'Gedung Serbaguna',
+      venue_address: 'Jl. Ahmad Yani No. 456, Jakarta',
+      venue_city: 'Jakarta',
+      venue_province: 'DKI Jakarta',
+      venue_latitude: -6.1751,
+      venue_longitude: 106.8650,
+      event_date: '2024-02-14',
+      start_time: '18:00',
+      end_time: '21:00',
+      description: 'Resepsi pernikahan untuk keluarga dan teman',
+      dress_code: 'Semi Formal',
+      contact_person: 'Ibu Siti',
+      contact_phone: '+62 813-7890-1234',
+      created_at: '2024-01-15T08:00:00Z',
+      updated_at: '2024-01-15T08:00:00Z'
+    }
+  ];
+
   const [events, setEvents] = useState<Event[]>(mockEvents);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);

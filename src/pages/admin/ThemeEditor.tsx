@@ -12,8 +12,8 @@ import {
   SwatchIcon,
   EyeIcon,
   PlusIcon,
-  SaveIcon,
-  RefreshCwIcon
+  BookmarkIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
 
@@ -148,11 +148,11 @@ const ThemeEditor = () => {
             Buat Theme Baru
           </Button>
           <Button variant="outline" onClick={handleResetTheme}>
-            <RefreshCwIcon className="h-4 w-4 mr-2" />
+            <ArrowPathIcon className="h-4 w-4 mr-2" />
             Reset
           </Button>
           <Button variant="premium" onClick={handleSaveTheme}>
-            <SaveIcon className="h-4 w-4 mr-2" />
+            <BookmarkIcon className="h-4 w-4 mr-2" />
             Simpan & Terapkan
           </Button>
         </div>

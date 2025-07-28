@@ -8,8 +8,8 @@ import {
   UsersIcon,
   EnvelopeIcon,
   EyeIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CalendarIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
@@ -107,7 +107,7 @@ const Analytics = () => {
               </div>
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <TrendingUpIcon className="h-4 w-4 text-green-500" />
+              <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
               <span className="text-sm text-green-500">+{guestStats.growth}%</span>
               <span className="text-sm text-muted-foreground">dari minggu lalu</span>
             </div>
@@ -162,7 +162,7 @@ const Analytics = () => {
               </div>
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <TrendingUpIcon className="h-4 w-4 text-green-500" />
+              <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
               <span className="text-sm text-green-500">+{websiteStats.growth}%</span>
               <span className="text-sm text-muted-foreground">dari minggu lalu</span>
             </div>
@@ -175,7 +175,7 @@ const Analytics = () => {
         <Card className="elegant-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUpIcon className="h-5 w-5" />
+              <ArrowTrendingUpIcon className="h-5 w-5" />
               Trend RSVP
             </CardTitle>
             <CardDescription>
