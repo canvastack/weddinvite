@@ -43,8 +43,8 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
           setCurrentPosition(userLocation);
           setSelectedPosition(userLocation);
           
-          // Pan map to current location
-          if (mapRef.current) {
+          // Pan map to current location and update marker
+          if (mapRef.current && isMapReady) {
             mapRef.current.setView(userLocation, 15);
             updateMarker(userLocation);
           }
@@ -98,6 +98,8 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
   // Initialize map
   useEffect(() => {
     if (!mapContainerRef.current) return;
+    
+    // If no initial position and no current position, get current location first
     if (!initialPosition && !currentPosition) {
       getCurrentLocation();
       return;
@@ -108,18 +110,28 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
 
     try {
       // Initialize map
-      const map = L.map(mapContainerRef.current).setView(position, 15);
+      const map = L.map(mapContainerRef.current, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: false
+      }).setView(position, 15);
       
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
 
-      // Add click handler
+      // Add click handler - this is the key fix!
       map.on('click', function(e) {
         const newPosition: [number, number] = [e.latlng.lat, e.latlng.lng];
+        console.log('Map clicked at:', newPosition); // Debug log
         setSelectedPosition(newPosition);
         updateMarker(newPosition);
+      });
+
+      // Add double-click handler for zooming
+      map.on('dblclick', function(e) {
+        map.setZoom(map.getZoom() + 1);
       });
 
       mapRef.current = map;
@@ -142,10 +154,11 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         markerRef.current = null;
       }
     };
-  }, [currentPosition]);
+  }, [currentPosition, initialPosition]);
 
   const handleConfirm = () => {
     if (selectedPosition) {
+      console.log('Location confirmed:', selectedPosition); // Debug log
       onLocationSelect(selectedPosition[0], selectedPosition[1]);
     }
   };
@@ -157,7 +170,10 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
           <p className="text-muted-foreground mb-4">Peta tidak dapat dimuat</p>
           <p className="text-sm text-muted-foreground mb-4">{mapError}</p>
           <Button 
-            onClick={() => setMapError(null)}
+            onClick={() => {
+              setMapError(null);
+              setIsMapReady(false);
+            }}
             variant="outline"
           >
             Coba lagi
@@ -184,7 +200,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Klik atau seret marker untuk memilih lokasi
+          <strong>Klik pada peta</strong> atau seret marker untuk memilih lokasi
         </p>
         <Button
           variant="outline"
@@ -197,7 +213,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         </Button>
       </div>
       
-      <div className="h-96 w-full rounded-lg overflow-hidden border relative">
+      <div className="h-96 w-full rounded-lg overflow-hidden border relative" style={{ zIndex: 1 }}>
         {!isMapReady && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
             <div className="text-center">
