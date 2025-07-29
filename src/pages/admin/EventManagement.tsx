@@ -3,11 +3,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   CalendarIcon, 
   PlusIcon, 
@@ -18,6 +15,7 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
+import EventFormWithMap from '@/components/admin/EventFormWithMap';
 
 interface Event {
   id: string;
@@ -109,27 +107,24 @@ const EventManagement = () => {
     });
   };
 
-  const handleSubmitEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    
+  const handleEventSubmit = (data: Event & { venue_latitude: number; venue_longitude: number }) => {
     const eventData: Event = {
       id: editingEvent?.id || Date.now().toString(),
-      title: formData.get('title') as string,
-      event_type: formData.get('event_type') as 'akad' | 'resepsi',
-      venue_name: formData.get('venue_name') as string,
-      venue_address: formData.get('venue_address') as string,
-      venue_city: formData.get('venue_city') as string,
-      venue_province: formData.get('venue_province') as string,
-      venue_latitude: parseFloat(formData.get('venue_latitude') as string),
-      venue_longitude: parseFloat(formData.get('venue_longitude') as string),
-      event_date: formData.get('event_date') as string,
-      start_time: formData.get('start_time') as string,
-      end_time: formData.get('end_time') as string,
-      description: formData.get('description') as string || undefined,
-      dress_code: formData.get('dress_code') as string || undefined,
-      contact_person: formData.get('contact_person') as string || undefined,
-      contact_phone: formData.get('contact_phone') as string || undefined,
+      title: data.title,
+      event_type: data.event_type,
+      venue_name: data.venue_name,
+      venue_address: data.venue_address,
+      venue_city: data.venue_city,
+      venue_province: data.venue_province,
+      venue_latitude: data.venue_latitude,
+      venue_longitude: data.venue_longitude,
+      event_date: data.event_date,
+      start_time: data.start_time,
+      end_time: data.end_time,
+      description: data.description,
+      dress_code: data.dress_code,
+      contact_person: data.contact_person,
+      contact_phone: data.contact_phone,
       created_at: editingEvent?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -152,6 +147,11 @@ const EventManagement = () => {
     setEditingEvent(null);
   };
 
+  const handleFormCancel = () => {
+    setIsDialogOpen(false);
+    setEditingEvent(null);
+  };
+
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.venue_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -162,7 +162,7 @@ const EventManagement = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gradient">Manajemen Acara</h1>
-          <p className="text-muted-foreground">Kelola acara pernikahan dan detail pelaksanaannya</p>
+          <p className="text-muted-foreground">Kelola acara pernikahan dan detail pelaksanaannya dengan peta interaktif</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -171,196 +171,21 @@ const EventManagement = () => {
               Tambah Acara
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingEvent ? 'Edit Acara' : 'Tambah Acara Baru'}
               </DialogTitle>
               <DialogDescription>
-                {editingEvent ? 'Perbarui informasi acara' : 'Tambahkan acara baru ke jadwal pernikahan'}
+                {editingEvent ? 'Perbarui informasi acara' : 'Tambahkan acara baru dengan lokasi peta interaktif'}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmitEvent} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Judul Acara *</Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    defaultValue={editingEvent?.title}
-                    placeholder="Akad Nikah / Resepsi"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="event_type">Tipe Acara *</Label>
-                  <Select name="event_type" defaultValue={editingEvent?.event_type || 'akad'}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih tipe acara" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="akad">Akad Nikah</SelectItem>
-                      <SelectItem value="resepsi">Resepsi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="venue_name">Nama Venue *</Label>
-                <Input
-                  id="venue_name"
-                  name="venue_name"
-                  defaultValue={editingEvent?.venue_name}
-                  placeholder="Masjid / Gedung / Rumah"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="venue_address">Alamat Venue *</Label>
-                <Textarea
-                  id="venue_address"
-                  name="venue_address"
-                  defaultValue={editingEvent?.venue_address}
-                  placeholder="Alamat lengkap venue"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="venue_city">Kota *</Label>
-                  <Input
-                    id="venue_city"
-                    name="venue_city"
-                    defaultValue={editingEvent?.venue_city}
-                    placeholder="Nama kota"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="venue_province">Provinsi *</Label>
-                  <Input
-                    id="venue_province"
-                    name="venue_province"
-                    defaultValue={editingEvent?.venue_province}
-                    placeholder="Nama provinsi"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="venue_latitude">Latitude *</Label>
-                  <Input
-                    id="venue_latitude"
-                    name="venue_latitude"
-                    type="number"
-                    step="any"
-                    defaultValue={editingEvent?.venue_latitude}
-                    placeholder="-6.2088"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="venue_longitude">Longitude *</Label>
-                  <Input
-                    id="venue_longitude"
-                    name="venue_longitude"
-                    type="number"
-                    step="any"
-                    defaultValue={editingEvent?.venue_longitude}
-                    placeholder="106.8456"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="event_date">Tanggal Acara *</Label>
-                  <Input
-                    id="event_date"
-                    name="event_date"
-                    type="date"
-                    defaultValue={editingEvent?.event_date}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="start_time">Waktu Mulai *</Label>
-                  <Input
-                    id="start_time"
-                    name="start_time"
-                    type="time"
-                    defaultValue={editingEvent?.start_time}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end_time">Waktu Selesai *</Label>
-                  <Input
-                    id="end_time"
-                    name="end_time"
-                    type="time"
-                    defaultValue={editingEvent?.end_time}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Deskripsi</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  defaultValue={editingEvent?.description}
-                  placeholder="Deskripsi acara"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dress_code">Dress Code</Label>
-                  <Input
-                    id="dress_code"
-                    name="dress_code"
-                    defaultValue={editingEvent?.dress_code}
-                    placeholder="Formal / Semi Formal / Casual"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact_person">Contact Person</Label>
-                  <Input
-                    id="contact_person"
-                    name="contact_person"
-                    defaultValue={editingEvent?.contact_person}
-                    placeholder="Nama contact person"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="contact_phone">Nomor Telepon Contact</Label>
-                <Input
-                  id="contact_phone"
-                  name="contact_phone"
-                  defaultValue={editingEvent?.contact_phone}
-                  placeholder="+62 812-3456-7890"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="premium">
-                  {editingEvent ? 'Perbarui' : 'Tambah'}
-                </Button>
-              </div>
-            </form>
+            
+            <EventFormWithMap
+              initialData={editingEvent || undefined}
+              onSubmit={handleEventSubmit}
+              onCancel={handleFormCancel}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -385,7 +210,7 @@ const EventManagement = () => {
             Daftar Acara ({filteredEvents.length})
           </CardTitle>
           <CardDescription>
-            Kelola semua acara pernikahan
+            Kelola semua acara pernikahan dengan lokasi peta
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -418,6 +243,9 @@ const EventManagement = () => {
                       </div>
                       <p className="ml-6">{event.venue_address}</p>
                       <p className="ml-6 text-muted-foreground">{event.venue_city}, {event.venue_province}</p>
+                      <p className="ml-6 text-xs text-muted-foreground">
+                        Koordinat: {event.venue_latitude}, {event.venue_longitude}
+                      </p>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-2">
