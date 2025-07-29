@@ -1,4 +1,3 @@
-
 import { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import { mockDistanceCalculations } from '@/data/mockDistance';
 import { mockGuests } from '@/data/mockGuests';
 import { useToast } from '@/hooks/use-toast';
 import MapDisplay from './MapDisplay';
+import LocationPicker from './LocationPicker';
 
 interface Location {
   id: string;
@@ -51,7 +51,13 @@ const MapManager = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [mapError, setMapError] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [tempLocationData, setTempLocationData] = useState<{
+    name: string;
+    address: string;
+    type: string;
+    description?: string;
+  } | null>(null);
 
   // Default center for Jakarta area
   const defaultCenter: [number, number] = [-6.2088, 106.8456];
@@ -72,11 +78,13 @@ const MapManager = () => {
 
   const handleAddLocation = () => {
     setEditingLocation(null);
+    setTempLocationData(null);
     setIsLocationDialogOpen(true);
   };
 
   const handleEditLocation = (location: Location) => {
     setEditingLocation(location);
+    setTempLocationData(null);
     setIsLocationDialogOpen(true);
   };
 
@@ -88,28 +96,42 @@ const MapManager = () => {
     });
   };
 
-  const handleSubmitLocation = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     
-    const locationData: Location = {
-      id: editingLocation?.id || Date.now().toString(),
+    const locationData = {
       name: formData.get('name') as string,
       address: formData.get('address') as string,
-      latitude: parseFloat(formData.get('latitude') as string),
-      longitude: parseFloat(formData.get('longitude') as string),
-      type: formData.get('type') as 'venue' | 'accommodation' | 'other',
+      type: formData.get('type') as string,
       description: formData.get('description') as string || undefined,
     };
 
+    setTempLocationData(locationData);
+    setShowLocationPicker(true);
+  };
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    if (!tempLocationData) return;
+
+    const newLocation: Location = {
+      id: editingLocation?.id || Date.now().toString(),
+      name: tempLocationData.name,
+      address: tempLocationData.address,
+      latitude: lat,
+      longitude: lng,
+      type: tempLocationData.type as 'venue' | 'accommodation' | 'other',
+      description: tempLocationData.description,
+    };
+
     if (editingLocation) {
-      setLocations(locations.map(loc => loc.id === editingLocation.id ? locationData : loc));
+      setLocations(locations.map(loc => loc.id === editingLocation.id ? newLocation : loc));
       toast({
         title: "Lokasi diperbarui",
         description: "Data lokasi berhasil diperbarui.",
       });
     } else {
-      setLocations([...locations, locationData]);
+      setLocations([...locations, newLocation]);
       toast({
         title: "Lokasi ditambahkan",
         description: "Lokasi baru berhasil ditambahkan.",
@@ -118,6 +140,13 @@ const MapManager = () => {
 
     setIsLocationDialogOpen(false);
     setEditingLocation(null);
+    setShowLocationPicker(false);
+    setTempLocationData(null);
+  };
+
+  const handleLocationPickerClose = () => {
+    setShowLocationPicker(false);
+    setTempLocationData(null);
   };
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -167,7 +196,7 @@ const MapManager = () => {
                 Tambah Lokasi
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>
                   {editingLocation ? 'Edit Lokasi' : 'Tambah Lokasi Baru'}
@@ -176,84 +205,68 @@ const MapManager = () => {
                   {editingLocation ? 'Perbarui informasi lokasi' : 'Tambahkan lokasi baru ke peta'}
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmitLocation} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nama Lokasi</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    defaultValue={editingLocation?.name}
-                    placeholder="Masukkan nama lokasi"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Alamat</Label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    defaultValue={editingLocation?.address}
-                    placeholder="Masukkan alamat lengkap"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              
+              {showLocationPicker ? (
+                <LocationPicker
+                  initialPosition={editingLocation ? [editingLocation.latitude, editingLocation.longitude] : undefined}
+                  onLocationSelect={handleLocationSelect}
+                  onClose={handleLocationPickerClose}
+                />
+              ) : (
+                <form onSubmit={handleFormSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="latitude">Latitude</Label>
+                    <Label htmlFor="name">Nama Lokasi</Label>
                     <Input
-                      id="latitude"
-                      name="latitude"
-                      type="number"
-                      step="any"
-                      defaultValue={editingLocation?.latitude}
-                      placeholder="-6.2088"
+                      id="name"
+                      name="name"
+                      defaultValue={editingLocation?.name}
+                      placeholder="Masukkan nama lokasi"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="longitude">Longitude</Label>
-                    <Input
-                      id="longitude"
-                      name="longitude"
-                      type="number"
-                      step="any"
-                      defaultValue={editingLocation?.longitude}
-                      placeholder="106.8456"
+                    <Label htmlFor="address">Alamat</Label>
+                    <Textarea
+                      id="address"
+                      name="address"
+                      defaultValue={editingLocation?.address}
+                      placeholder="Masukkan alamat lengkap"
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipe Lokasi</Label>
-                  <Select name="type" defaultValue={editingLocation?.type || 'venue'}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih tipe lokasi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="venue">Venue Acara</SelectItem>
-                      <SelectItem value="accommodation">Akomodasi</SelectItem>
-                      <SelectItem value="other">Lainnya</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Deskripsi</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    defaultValue={editingLocation?.description}
-                    placeholder="Deskripsi lokasi (opsional)"
-                  />
-                </div>
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsLocationDialogOpen(false)}>
-                    Batal
-                  </Button>
-                  <Button type="submit" variant="premium">
-                    {editingLocation ? 'Perbarui' : 'Tambah'}
-                  </Button>
-                </div>
-              </form>
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Tipe Lokasi</Label>
+                    <Select name="type" defaultValue={editingLocation?.type || 'venue'}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih tipe lokasi" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="venue">Venue Acara</SelectItem>
+                        <SelectItem value="accommodation">Akomodasi</SelectItem>
+                        <SelectItem value="other">Lainnya</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Deskripsi</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      defaultValue={editingLocation?.description}
+                      placeholder="Deskripsi lokasi (opsional)"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setIsLocationDialogOpen(false)}>
+                      Batal
+                    </Button>
+                    <Button type="submit" variant="premium">
+                      <MapPinIcon className="h-4 w-4 mr-2" />
+                      Pilih di Peta
+                    </Button>
+                  </div>
+                </form>
+              )}
             </DialogContent>
           </Dialog>
         </div>
