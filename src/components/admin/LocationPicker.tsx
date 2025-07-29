@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Button } from '@/components/ui/button';
-import { MapPinIcon, NavigationIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -121,11 +121,6 @@ const LocationPicker = ({ initialPosition, onLocationSelect, onClose }: Location
     }
   };
 
-  const handleMapError = (error: any) => {
-    console.error('Map error:', error);
-    setMapError('Gagal memuat peta. Periksa koneksi internet Anda.');
-  };
-
   if (mapError) {
     return (
       <div className="h-96 w-full flex items-center justify-center bg-muted/20 rounded-lg border-2 border-dashed border-muted">
@@ -168,7 +163,7 @@ const LocationPicker = ({ initialPosition, onLocationSelect, onClose }: Location
           onClick={getCurrentLocation}
           disabled={isGettingLocation}
         >
-          <NavigationIcon className="h-4 w-4 mr-2" />
+          <ArrowPathIcon className="h-4 w-4 mr-2" />
           Lokasi Saya
         </Button>
       </div>
@@ -181,12 +176,10 @@ const LocationPicker = ({ initialPosition, onLocationSelect, onClose }: Location
           ref={mapRef}
           scrollWheelZoom={true}
           style={{ height: '100%', width: '100%' }}
-          onError={handleMapError}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            onError={handleMapError}
           />
           <LocationMarker 
             position={selectedPosition} 
