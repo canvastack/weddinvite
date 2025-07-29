@@ -62,6 +62,7 @@ const ThemeEditor = () => {
   });
 
   const [activeTheme, setActiveTheme] = useState<ThemeSettings>(currentTheme);
+  const [originalTheme, setOriginalTheme] = useState<ThemeSettings>(currentTheme);
   const [isEditing, setIsEditing] = useState(false);
 
   // Save themes to localStorage whenever themes change
@@ -69,14 +70,16 @@ const ThemeEditor = () => {
     localStorage.setItem('theme_editor_themes', JSON.stringify(themes));
   }, [themes]);
 
-  // Update preview in real-time as user edits
+  // Apply theme changes immediately for preview
   useEffect(() => {
     if (isEditing) {
+      console.log('Applying preview theme:', activeTheme.name);
       updateTheme(activeTheme);
     }
   }, [activeTheme, isEditing, updateTheme]);
 
   const handleSaveTheme = () => {
+    // Update the themes list
     const updatedThemes = themes.map(theme => ({
       ...theme,
       is_active: theme.id === activeTheme.id,
@@ -87,26 +90,30 @@ const ThemeEditor = () => {
     }));
     
     setThemes(updatedThemes);
-    updateTheme(activeTheme);
+    setOriginalTheme(activeTheme);
     setIsEditing(false);
+    
+    // Ensure the theme is applied
+    updateTheme(activeTheme);
     
     toast({
       title: "Theme berhasil disimpan!",
-      description: "Tema telah diterapkan ke seluruh website.",
+      description: `Theme "${activeTheme.name}" telah diterapkan ke seluruh website.`,
     });
+
+    console.log('Theme saved and applied:', activeTheme.name);
   };
 
   const handleResetTheme = () => {
-    const originalTheme = themes.find(t => t.id === activeTheme.id);
-    if (originalTheme) {
-      setActiveTheme(originalTheme);
-      updateTheme(originalTheme);
-      setIsEditing(false);
-      toast({
-        title: "Theme direset",
-        description: "Pengaturan theme dikembalikan ke kondisi semula.",
-      });
-    }
+    console.log('Resetting theme to original:', originalTheme.name);
+    setActiveTheme(originalTheme);
+    updateTheme(originalTheme);
+    setIsEditing(false);
+    
+    toast({
+      title: "Theme direset",
+      description: "Pengaturan theme dikembalikan ke kondisi semula.",
+    });
   };
 
   const handleCreateTheme = () => {
@@ -127,6 +134,7 @@ const ThemeEditor = () => {
     
     setThemes([...themes, newTheme]);
     setActiveTheme(newTheme);
+    setOriginalTheme(newTheme);
     setIsEditing(true);
     
     toast({
@@ -151,6 +159,7 @@ const ThemeEditor = () => {
     if (activeTheme.id === themeId) {
       const newActiveTheme = updatedThemes[0];
       setActiveTheme(newActiveTheme);
+      setOriginalTheme(newActiveTheme);
       updateTheme(newActiveTheme);
     }
 
@@ -161,6 +170,7 @@ const ThemeEditor = () => {
   };
 
   const handleThemeChange = (field: keyof ThemeSettings, value: string) => {
+    console.log(`Changing ${field} to:`, value);
     const updatedTheme = {
       ...activeTheme,
       [field]: value
@@ -170,10 +180,14 @@ const ThemeEditor = () => {
   };
 
   const handleSelectTheme = (theme: ThemeSettings) => {
+    console.log('Selecting theme:', theme.name);
     setActiveTheme(theme);
+    setOriginalTheme(theme);
     updateTheme(theme);
     setIsEditing(false);
   };
+
+  const hasChanges = JSON.stringify(activeTheme) !== JSON.stringify(originalTheme);
 
   return (
     <div className="p-6 space-y-6">
@@ -187,16 +201,30 @@ const ThemeEditor = () => {
             <PlusIcon className="h-4 w-4 mr-2" />
             Buat Theme Baru
           </Button>
-          <Button variant="outline" onClick={handleResetTheme} disabled={!isEditing}>
+          <Button variant="outline" onClick={handleResetTheme} disabled={!hasChanges}>
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button variant="default" onClick={handleSaveTheme} disabled={!isEditing}>
+          <Button 
+            variant="default" 
+            onClick={handleSaveTheme} 
+            disabled={!hasChanges}
+            className="bg-primary hover:bg-primary/90"
+          >
             <BookmarkIcon className="h-4 w-4 mr-2" />
-            {isEditing ? 'Simpan & Terapkan' : 'Tersimpan'}
+            {hasChanges ? 'Simpan & Terapkan' : 'Tersimpan'}
           </Button>
         </div>
       </div>
+
+      {hasChanges && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800 text-sm">
+            <strong>Perhatian:</strong> Anda memiliki perubahan yang belum disimpan. 
+            Klik "Simpan & Terapkan" untuk menyimpan perubahan secara permanen.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Theme Selection */}
@@ -223,7 +251,7 @@ const ThemeEditor = () => {
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium">{theme.name}</h3>
                     <div className="flex items-center gap-2">
-                      {theme.is_active && (
+                      {currentTheme.id === theme.id && (
                         <Badge variant="default">Aktif</Badge>
                       )}
                       {themes.length > 1 && (
@@ -269,7 +297,7 @@ const ThemeEditor = () => {
               Editor Theme: {activeTheme.name}
             </CardTitle>
             <CardDescription>
-              Kustomisasi warna, font, dan gaya visual. Perubahan akan langsung diterapkan!
+              Kustomisasi warna, font, dan gaya visual. Perubahan akan langsung terlihat sebagai preview!
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -469,10 +497,10 @@ const ThemeEditor = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <EyeIcon className="h-5 w-5" />
-            Live Preview - Langsung Diterapkan ke Website!
+            Live Preview
           </CardTitle>
           <CardDescription>
-            Preview theme yang sedang aktif. Perubahan langsung terlihat di website utama.
+            Preview theme yang sedang diedit. {hasChanges ? 'Simpan untuk menerapkan perubahan secara permanen.' : 'Theme saat ini telah diterapkan.'}
           </CardDescription>
         </CardHeader>
         <CardContent>

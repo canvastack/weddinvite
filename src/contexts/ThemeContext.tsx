@@ -39,6 +39,31 @@ const defaultTheme: ThemeSettings = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Helper function to convert hex to HSL
+const hexToHsl = (hex: string): string => {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+};
+
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState<ThemeSettings>(() => {
     const savedTheme = localStorage.getItem('current_theme');
@@ -48,7 +73,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const applyTheme = (theme: ThemeSettings) => {
     const root = document.documentElement;
     
-    // Apply CSS custom properties
+    // Convert hex colors to HSL for proper integration with design system
+    const primaryHsl = hexToHsl(theme.primary_color);
+    const secondaryHsl = hexToHsl(theme.secondary_color);
+    const accentHsl = hexToHsl(theme.accent_color);
+    const backgroundHsl = hexToHsl(theme.background_color);
+    const textHsl = hexToHsl(theme.text_color);
+    
+    // Apply theme variables
     root.style.setProperty('--theme-primary', theme.primary_color);
     root.style.setProperty('--theme-secondary', theme.secondary_color);
     root.style.setProperty('--theme-accent', theme.accent_color);
@@ -58,17 +90,37 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     root.style.setProperty('--theme-font-size', theme.font_size);
     root.style.setProperty('--theme-border-radius', theme.border_radius);
     root.style.setProperty('--theme-shadow', theme.shadow);
+
+    // Update design system tokens to work with new theme
+    root.style.setProperty('--primary', primaryHsl);
+    root.style.setProperty('--background', backgroundHsl);
+    root.style.setProperty('--foreground', textHsl);
+    
+    // Apply to body for immediate effect
+    document.body.style.fontFamily = theme.font_family;
+    document.body.style.fontSize = theme.font_size;
+    document.body.style.backgroundColor = theme.background_color;
+    document.body.style.color = theme.text_color;
+
+    console.log('Theme applied:', theme.name, theme);
   };
 
   const updateTheme = (theme: ThemeSettings) => {
+    console.log('Updating theme to:', theme.name);
     setCurrentTheme(theme);
     applyTheme(theme);
     localStorage.setItem('current_theme', JSON.stringify(theme));
   };
 
   useEffect(() => {
+    console.log('Applying initial theme:', currentTheme.name);
     applyTheme(currentTheme);
   }, []);
+
+  // Re-apply theme whenever currentTheme changes
+  useEffect(() => {
+    applyTheme(currentTheme);
+  }, [currentTheme]);
 
   return (
     <ThemeContext.Provider value={{ currentTheme, updateTheme, applyTheme }}>
