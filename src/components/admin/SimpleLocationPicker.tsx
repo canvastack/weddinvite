@@ -27,7 +27,6 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
   const [selectedPosition, setSelectedPosition] = useState<[number, number] | null>(initialPosition || null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [isMapReady, setIsMapReady] = useState(false);
 
   // Get user's current location
   const getCurrentLocation = () => {
@@ -44,7 +43,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
           setSelectedPosition(userLocation);
           
           // Pan map to current location and update marker
-          if (mapRef.current && isMapReady) {
+          if (mapRef.current) {
             mapRef.current.setView(userLocation, 15);
             updateMarker(userLocation);
           }
@@ -89,6 +88,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         const marker = e.target;
         const newPosition = marker.getLatLng();
         const newPos: [number, number] = [newPosition.lat, newPosition.lng];
+        console.log('Marker dragged to:', newPos);
         setSelectedPosition(newPos);
       });
 
@@ -108,37 +108,60 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
     const position = initialPosition || currentPosition;
     if (!position) return;
 
+    // Clean up existing map first
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+
     try {
-      // Initialize map
+      console.log('Initializing map at position:', position);
+      
+      // Initialize map with specific container
       const map = L.map(mapContainerRef.current, {
+        center: position,
+        zoom: 15,
         zoomControl: true,
         scrollWheelZoom: true,
-        doubleClickZoom: false
-      }).setView(position, 15);
+        doubleClickZoom: true,
+        dragging: true,
+        touchZoom: true,
+        boxZoom: true,
+        keyboard: true,
+        tap: true,
+        zoomSnap: 0.1,
+        zoomDelta: 0.5,
+        wheelDebounceTime: 100,
+        wheelPxPerZoomLevel: 200
+      });
       
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
       }).addTo(map);
 
-      // Add click handler - this is the key fix!
-      map.on('click', function(e) {
-        const newPosition: [number, number] = [e.latlng.lat, e.latlng.lng];
-        console.log('Map clicked at:', newPosition); // Debug log
-        setSelectedPosition(newPosition);
-        updateMarker(newPosition);
-      });
+      // Wait for map to be ready before adding event listeners
+      map.whenReady(() => {
+        console.log('Map is ready, adding click handler');
+        
+        // Add click handler with proper event handling
+        map.on('click', (e: L.LeafletMouseEvent) => {
+          console.log('Map clicked at:', e.latlng);
+          const newPosition: [number, number] = [e.latlng.lat, e.latlng.lng];
+          setSelectedPosition(newPosition);
+          updateMarker(newPosition);
+          
+          // Prevent event bubbling
+          L.DomEvent.stopPropagation(e);
+        });
 
-      // Add double-click handler for zooming
-      map.on('dblclick', function(e) {
-        map.setZoom(map.getZoom() + 1);
+        // Add initial marker
+        updateMarker(position);
       });
 
       mapRef.current = map;
-      setIsMapReady(true);
-      
-      // Add initial marker
-      updateMarker(position);
+      setMapError(null);
 
     } catch (error) {
       console.error('Error initializing map:', error);
@@ -147,6 +170,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
 
     return () => {
       if (mapRef.current) {
+        console.log('Cleaning up map');
         mapRef.current.remove();
         mapRef.current = null;
       }
@@ -158,7 +182,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
 
   const handleConfirm = () => {
     if (selectedPosition) {
-      console.log('Location confirmed:', selectedPosition); // Debug log
+      console.log('Location confirmed:', selectedPosition);
       onLocationSelect(selectedPosition[0], selectedPosition[1]);
     }
   };
@@ -172,7 +196,6 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
           <Button 
             onClick={() => {
               setMapError(null);
-              setIsMapReady(false);
             }}
             variant="outline"
           >
@@ -213,19 +236,16 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         </Button>
       </div>
       
+      {/* Map container with higher z-index to ensure proper layering */}
       <div className="h-96 w-full rounded-lg overflow-hidden border relative" style={{ zIndex: 1 }}>
-        {!isMapReady && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-              <p className="text-sm text-muted-foreground">Memuat peta...</p>
-            </div>
-          </div>
-        )}
         <div
           ref={mapContainerRef}
-          className="h-full w-full"
-          style={{ height: '100%', width: '100%' }}
+          className="h-full w-full cursor-crosshair"
+          style={{ 
+            height: '100%', 
+            width: '100%',
+            position: 'relative'
+          }}
         />
       </div>
       
