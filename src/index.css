@@ -180,6 +180,19 @@
     }
   }
 
+  /* Moving Gradient Animation for Footer */
+  @keyframes slide-gradient {
+    0% {
+      transform: translateX(-100%);
+    }
+    50% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
   /* Smoke Effect Animation */
   .smoke-effect {
     position: relative;

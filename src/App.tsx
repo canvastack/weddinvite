@@ -1,34 +1,37 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import GuestManagement from "./pages/admin/GuestManagement";
-import EmailBlastManager from "./components/admin/EmailBlastManager";
-import MapManager from "./components/admin/MapManager";
-import UserManagement from "./components/admin/UserManagement";
-import EventManagement from "./pages/admin/EventManagement";
-import ThemeEditor from "./pages/admin/ThemeEditor";
-import Analytics from "./pages/admin/Analytics";
-import Settings from "./pages/admin/Settings";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
 
-const queryClient = new QueryClient();
+// Pages
+import Index from '@/pages/Index';
+import NotFound from '@/pages/NotFound';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+// Admin Pages
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import GuestManagement from '@/pages/admin/GuestManagement';
+import EmailBlastManager from '@/components/admin/EmailBlastManager';
+import MapManager from '@/components/admin/MapManager';
+import EventManagement from '@/pages/admin/EventManagement';
+import ThemeEditor from '@/pages/admin/ThemeEditor';
+import Analytics from '@/pages/admin/Analytics';
+import UserManagement from '@/components/admin/UserManagement';
+import Settings from '@/pages/admin/Settings';
+import Login from '@/pages/admin/Login';
+import EditProfile from '@/pages/admin/EditProfile';
+
+function App() {
+  return (
+    <Router>
+      <div className="App">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Index />} />
           
-          {/* Admin Routes */}
+          {/* Admin Login */}
+          <Route path="/admin/login" element={<Login />} />
+          
+          {/* Protected Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="guests" element={<GuestManagement />} />
@@ -39,14 +42,17 @@ const App = () => (
             <Route path="analytics" element={<Analytics />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="profile" element={<EditProfile />} />
           </Route>
           
-          {/* Catch-all route */}
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        
+        <Toaster />
+      </div>
+    </Router>
+  );
+}
 
 export default App;

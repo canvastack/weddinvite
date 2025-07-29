@@ -1,7 +1,9 @@
 
-import { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { User } from '@/data/mockUsers';
 import { 
   HomeIcon,
   UsersIcon,
@@ -12,13 +14,29 @@ import {
   CalendarIcon,
   PaintBrushIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  UserIcon,
+  ArrowRightOnRectangleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const adminUser = localStorage.getItem('adminUser');
+    if (adminUser) {
+      setUser(JSON.parse(adminUser));
+    } else {
+      navigate('/admin/login');
+    }
+  }, [navigate]);
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
@@ -32,27 +50,58 @@ const AdminLayout = () => {
     { name: 'Pengaturan', href: '/admin/settings', icon: CogIcon },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem('adminUser');
+    navigate('/admin/login');
+  };
+
+  if (!user) {
+    return null; // Will redirect to login
+  }
+
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        sidebarCollapsed ? "w-16" : "w-64"
       )}>
-        <div className="flex items-center justify-between h-16 px-4 border-b">
-          <h2 className="text-xl font-bold text-gradient">Admin Panel</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </Button>
-        </div>
-        
-        <nav className="mt-8 px-4">
-          <div className="space-y-2">
+        <div className="h-full bg-card/95 backdrop-blur-sm border-r border-border/50 shadow-elegant">
+          {/* Sidebar Header */}
+          <div className={cn(
+            "flex items-center justify-between h-16 px-4 border-b border-border/50 bg-gradient-to-r from-primary/5 to-rose-gold/5",
+            sidebarCollapsed && "justify-center px-2"
+          )}>
+            {!sidebarCollapsed && (
+              <h2 className="text-xl font-bold text-gradient">Admin Panel</h2>
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:flex hover-glow"
+              >
+                {sidebarCollapsed ? (
+                  <ChevronRightIcon className="h-5 w-5" />
+                ) : (
+                  <ChevronLeftIcon className="h-5 w-5" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden hover-glow"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Navigation */}
+          <nav className="mt-4 px-2 space-y-1">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -61,64 +110,134 @@ const AdminLayout = () => {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    "group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-300 relative overflow-hidden",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-gradient-premium text-primary-foreground shadow-glow"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
-                  <item.icon className="h-5 w-5 mr-3" />
-                  {item.name}
+                  {/* Hover gradient effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-rose-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                  
+                  <item.icon className={cn(
+                    "flex-shrink-0 transition-transform group-hover:scale-110 duration-300",
+                    sidebarCollapsed ? "h-6 w-6" : "h-5 w-5 mr-3"
+                  )} />
+                  
+                  {!sidebarCollapsed && (
+                    <span className="truncate relative z-10">{item.name}</span>
+                  )}
+                  
+                  {/* Active indicator */}
+                  {isActive && (
+                    <div className="absolute right-2 w-2 h-2 bg-primary-foreground rounded-full animate-pulse" />
+                  )}
                 </Link>
               );
             })}
-          </div>
-        </nav>
+          </nav>
 
-        <div className="absolute bottom-4 left-4 right-4">
-          <Link
-            to="/"
-            className="flex items-center px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg transition-colors"
-          >
-            <HomeIcon className="h-5 w-5 mr-3" />
-            Kembali ke Website
-          </Link>
+          {/* User section at bottom */}
+          <div className="absolute bottom-4 left-2 right-2">
+            <Link
+              to="/"
+              className={cn(
+                "flex items-center px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground rounded-xl transition-all duration-300 group",
+                sidebarCollapsed && "justify-center"
+              )}
+            >
+              <HomeIcon className={cn(
+                "flex-shrink-0 transition-transform group-hover:scale-110 duration-300",
+                sidebarCollapsed ? "h-5 w-5" : "h-5 w-5 mr-3"
+              )} />
+              {!sidebarCollapsed && <span>Kembali ke Website</span>}
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-card border-b px-4 py-3 flex items-center justify-between lg:px-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden"
-          >
-            <Bars3Icon className="h-6 w-6" />
-          </Button>
-          
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-muted-foreground">
-              Dhika & Sari Wedding Admin
+        {/* Glassmorphic Header */}
+        <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border/50 shadow-elegant">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden hover-glow"
+              >
+                <Bars3Icon className="h-6 w-6" />
+              </Button>
+              
+              <div>
+                <h1 className="text-xl font-bold text-gradient">
+                  Dhika & Sari Wedding Admin
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Professional Wedding Management System
+                </p>
+              </div>
             </div>
-            <Button variant="outline" size="sm">
-              Logout
-            </Button>
+            
+            {/* Header Actions */}
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              
+              {/* User Menu */}
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/admin/profile"
+                  className="group flex items-center gap-3 hover:bg-muted/60 rounded-full px-3 py-2 transition-all duration-300"
+                >
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-premium">
+                      {user.avatar ? (
+                        <img 
+                          src={user.avatar} 
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <UserIcon className="h-6 w-6 text-primary-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                  </div>
+                  <div className="text-left hidden md:block">
+                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+                  </div>
+                </Link>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 hover-glow"
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background via-muted/5 to-background">
+          <div className="p-6">
+            <Outlet />
+          </div>
         </main>
       </div>
 
-      {/* Overlay */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
