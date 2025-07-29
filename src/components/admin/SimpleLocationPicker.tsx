@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -117,7 +116,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
     try {
       console.log('Initializing map at position:', position);
       
-      // Initialize map with specific container
+      // Initialize map with specific container - removed 'tap' property to fix TypeScript error
       const map = L.map(mapContainerRef.current, {
         center: position,
         zoom: 15,
@@ -128,7 +127,6 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         touchZoom: true,
         boxZoom: true,
         keyboard: true,
-        tap: true,
         zoomSnap: 0.1,
         zoomDelta: 0.5,
         wheelDebounceTime: 100,
