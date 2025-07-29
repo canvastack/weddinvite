@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -26,6 +27,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
   const [selectedPosition, setSelectedPosition] = useState<[number, number] | null>(initialPosition || null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
 
   // Get user's current location
   const getCurrentLocation = () => {
@@ -94,29 +96,16 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
     markerRef.current = marker;
   };
 
-  // Initialize map
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
+  const initializeMap = () => {
+    if (!mapContainerRef.current || isMapInitialized) return;
     
-    // If no initial position and no current position, get current location first
-    if (!initialPosition && !currentPosition) {
-      getCurrentLocation();
-      return;
-    }
-
-    const position = initialPosition || currentPosition;
+    const position = currentPosition || initialPosition;
     if (!position) return;
-
-    // Clean up existing map first
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
 
     try {
       console.log('Initializing map at position:', position);
       
-      // Initialize map with specific container - removed 'tap' property to fix TypeScript error
+      // Initialize map with specific container
       const map = L.map(mapContainerRef.current, {
         center: position,
         zoom: 15,
@@ -156,6 +145,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
 
         // Add initial marker
         updateMarker(position);
+        setIsMapInitialized(true);
       });
 
       mapRef.current = map;
@@ -165,7 +155,28 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
       console.error('Error initializing map:', error);
       setMapError('Gagal memuat peta');
     }
+  };
 
+  // Initialize map when component mounts and container is ready
+  useEffect(() => {
+    // If no initial position and no current position, get current location first
+    if (!initialPosition && !currentPosition) {
+      getCurrentLocation();
+      return;
+    }
+
+    // Add a small delay to ensure dialog is fully rendered
+    const timer = setTimeout(() => {
+      initializeMap();
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [currentPosition, initialPosition]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       if (mapRef.current) {
         console.log('Cleaning up map');
@@ -175,8 +186,9 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
       if (markerRef.current) {
         markerRef.current = null;
       }
+      setIsMapInitialized(false);
     };
-  }, [currentPosition, initialPosition]);
+  }, []);
 
   const handleConfirm = () => {
     if (selectedPosition) {
@@ -194,6 +206,8 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
           <Button 
             onClick={() => {
               setMapError(null);
+              setIsMapInitialized(false);
+              setTimeout(() => initializeMap(), 100);
             }}
             variant="outline"
           >
@@ -245,6 +259,16 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
             position: 'relative'
           }}
         />
+        
+        {/* Loading overlay */}
+        {!isMapInitialized && (currentPosition || initialPosition) && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-lg">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+              <p className="text-sm text-muted-foreground">Memuat peta...</p>
+            </div>
+          </div>
+        )}
       </div>
       
       {selectedPosition && (
