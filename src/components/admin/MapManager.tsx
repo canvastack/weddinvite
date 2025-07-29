@@ -1,4 +1,5 @@
-import { useState, useEffect, Suspense } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,8 +23,8 @@ import { mockEvents } from '@/data/mockEvents';
 import { mockDistanceCalculations } from '@/data/mockDistance';
 import { mockGuests } from '@/data/mockGuests';
 import { useToast } from '@/hooks/use-toast';
-import MapDisplay from './MapDisplay';
-import LocationPicker from './LocationPicker';
+import SimpleMapDisplay from './SimpleMapDisplay';
+import SimpleLocationPicker from './SimpleLocationPicker';
 
 interface Location {
   id: string;
@@ -34,16 +35,6 @@ interface Location {
   type: 'venue' | 'accommodation' | 'other';
   description?: string;
 }
-
-// Loading component for the map
-const MapLoading = () => (
-  <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-      <p className="text-sm text-muted-foreground">Memuat peta...</p>
-    </div>
-  </div>
-);
 
 const MapManager = () => {
   const { toast } = useToast();
@@ -149,18 +140,6 @@ const MapManager = () => {
     setTempLocationData(null);
   };
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
   const getDistanceData = () => {
     return mockDistanceCalculations.map(calc => {
       const guest = mockGuests.find(g => g.id === calc.guest_id);
@@ -182,7 +161,7 @@ const MapManager = () => {
     : defaultCenter;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gradient">Manajemen Peta & Lokasi</h2>
@@ -191,7 +170,7 @@ const MapManager = () => {
         <div className="flex gap-2">
           <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="premium" onClick={handleAddLocation}>
+              <Button variant="default" onClick={handleAddLocation}>
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Tambah Lokasi
               </Button>
@@ -207,7 +186,7 @@ const MapManager = () => {
               </DialogHeader>
               
               {showLocationPicker ? (
-                <LocationPicker
+                <SimpleLocationPicker
                   initialPosition={editingLocation ? [editingLocation.latitude, editingLocation.longitude] : undefined}
                   onLocationSelect={handleLocationSelect}
                   onClose={handleLocationPickerClose}
@@ -260,7 +239,7 @@ const MapManager = () => {
                     <Button type="button" variant="outline" onClick={() => setIsLocationDialogOpen(false)}>
                       Batal
                     </Button>
-                    <Button type="submit" variant="premium">
+                    <Button type="submit">
                       <MapPinIcon className="h-4 w-4 mr-2" />
                       Pilih di Peta
                     </Button>
@@ -274,7 +253,7 @@ const MapManager = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Map Container */}
-        <Card className="elegant-card">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPinIcon className="h-5 w-5" />
@@ -303,13 +282,11 @@ const MapManager = () => {
               </div>
 
               <div className="h-64 rounded-lg overflow-hidden">
-                <Suspense fallback={<MapLoading />}>
-                  <MapDisplay
-                    center={mapCenter}
-                    locations={locations}
-                    selectedEventId={selectedEvent}
-                  />
-                </Suspense>
+                <SimpleMapDisplay
+                  center={mapCenter}
+                  locations={locations}
+                  selectedEventId={selectedEvent}
+                />
               </div>
 
               {selectedEventData ? (
@@ -338,7 +315,7 @@ const MapManager = () => {
         </Card>
 
         {/* Distance Calculations */}
-        <Card className="elegant-card">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ArrowTopRightOnSquareIcon className="h-5 w-5" />
@@ -395,7 +372,7 @@ const MapManager = () => {
       </div>
 
       {/* Locations Management */}
-      <Card className="elegant-card">
+      <Card>
         <CardHeader>
           <CardTitle>Manajemen Lokasi</CardTitle>
           <CardDescription>
