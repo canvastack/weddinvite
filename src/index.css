@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -65,19 +66,12 @@
     --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -158,6 +152,34 @@
 
 /* Premium Wedding Animations and Effects */
 @layer components {
+  /* Enhanced Blob Animation */
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
   /* Smoke Effect Animation */
   .smoke-effect {
     position: relative;
@@ -171,7 +193,7 @@
     left: 50%;
     width: 0;
     height: 0;
-    background: radial-gradient(circle, hsl(var(--primary) / 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     transition: var(--transition-premium);
@@ -180,10 +202,10 @@
   }
 
   .smoke-effect:hover::before {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
     opacity: 1;
-    animation: smoke-expand 0.6s ease-out;
+    animation: smoke-expand 0.8s ease-out;
   }
 
   @keyframes smoke-expand {
@@ -193,16 +215,16 @@
       opacity: 0;
     }
     50% {
-      opacity: 0.6;
+      opacity: 0.8;
     }
     100% {
-      width: 300px;
-      height: 300px;
+      width: 400px;
+      height: 400px;
       opacity: 1;
     }
   }
 
-  /* Premium Button Hover Effect */
+  /* Enhanced Premium Button Hover Effect */
   .premium-hover {
     position: relative;
     overflow: hidden;
@@ -216,8 +238,8 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary-glow) / 0.3), transparent);
-    transition: left 0.6s ease;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary-glow) / 0.4), transparent);
+    transition: left 0.8s ease;
   }
 
   .premium-hover:hover::after {
@@ -226,10 +248,10 @@
 
   .premium-hover:hover {
     box-shadow: var(--shadow-glow);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
   }
 
-  /* Elegant Card Hover */
+  /* Enhanced Elegant Card Hover */
   .elegant-card {
     position: relative;
     transition: var(--transition-premium);
@@ -252,12 +274,12 @@
   }
 
   .elegant-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: var(--shadow-elegant);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: var(--shadow-elegant), 0 25px 50px -12px hsl(var(--primary) / 0.25);
   }
 
   .elegant-card:hover::before {
-    opacity: 0.1;
+    opacity: 0.08;
   }
 
   /* Premium Text Gradient */
@@ -268,25 +290,31 @@
     background-clip: text;
   }
 
-  /* Floating Animation */
+  /* Enhanced Floating Animation */
   .floating {
-    animation: floating 3s ease-in-out infinite;
+    animation: floating 4s ease-in-out infinite;
   }
 
   @keyframes floating {
     0%, 100% {
-      transform: translateY(0px);
+      transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-8px) rotate(1deg);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-15px) rotate(0deg);
+    }
+    75% {
+      transform: translateY(-8px) rotate(-1deg);
     }
   }
 
-  /* Fade In Up Animation */
+  /* Enhanced Fade In Up Animation */
   .fade-in-up {
     opacity: 0;
-    transform: translateY(30px);
-    animation: fadeInUp 0.8s ease-out forwards;
+    transform: translateY(40px);
+    animation: fadeInUp 1s ease-out forwards;
   }
 
   @keyframes fadeInUp {
@@ -296,10 +324,53 @@
     }
   }
 
-  /* Stagger Animation Delays */
+  /* Enhanced Stagger Animation Delays */
   .delay-100 { animation-delay: 0.1s; }
   .delay-200 { animation-delay: 0.2s; }
   .delay-300 { animation-delay: 0.3s; }
   .delay-400 { animation-delay: 0.4s; }
   .delay-500 { animation-delay: 0.5s; }
+  .delay-600 { animation-delay: 0.6s; }
+
+  /* New Premium Animations */
+  .hover-glow:hover {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.5);
+    transition: var(--transition-premium);
+  }
+
+  .scale-on-hover:hover {
+    transform: scale(1.05);
+    transition: var(--transition-smooth);
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.2),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
 }
