@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { MapPinIcon, LoaderIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import SimpleLocationPicker from './SimpleLocationPicker';
 import { reverseGeocode } from '@/utils/geocoding';
 
@@ -138,7 +138,7 @@ const EventLocationPicker = ({ latitude, longitude, onLocationChange }: EventLoc
             
             {isLoadingAddress ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <LoaderIcon className="h-4 w-4 animate-spin" />
+                <ArrowPathIcon className="h-4 w-4 animate-spin" />
                 <span>Memuat informasi lokasi...</span>
               </div>
             ) : locationInfo ? (

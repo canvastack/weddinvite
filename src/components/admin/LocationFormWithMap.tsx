@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPinIcon, LoaderIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import SimpleLocationPicker from './SimpleLocationPicker';
 import { reverseGeocode } from '@/utils/geocoding';
 
@@ -154,7 +154,7 @@ const LocationFormWithMap = ({ initialData, onSubmit, onCancel }: LocationFormWi
             required
           />
           {isLoadingAddress && (
-            <LoaderIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin" />
+            <ArrowPathIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin" />
           )}
         </div>
       </div>
@@ -212,7 +212,7 @@ const LocationFormWithMap = ({ initialData, onSubmit, onCancel }: LocationFormWi
         >
           {isLoadingAddress ? (
             <>
-              <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+              <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
               Memuat...
             </>
           ) : (
