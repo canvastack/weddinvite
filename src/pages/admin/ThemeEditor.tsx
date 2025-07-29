@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,79 +13,86 @@ import {
   EyeIcon,
   PlusIcon,
   BookmarkIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
-
-interface Theme {
-  id: string;
-  name: string;
-  primary_color: string;
-  secondary_color: string;
-  accent_color: string;
-  background_color: string;
-  text_color: string;
-  font_family: string;
-  font_size: string;
-  border_radius: string;
-  shadow: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { useTheme, ThemeSettings } from '@/contexts/ThemeContext';
 
 const ThemeEditor = () => {
-  const [themes, setThemes] = useState<Theme[]>([
-    {
-      id: '1',
-      name: 'Classic Elegant',
-      primary_color: '#8B5CF6',
-      secondary_color: '#A78BFA',
-      accent_color: '#F59E0B',
-      background_color: '#FFFFFF',
-      text_color: '#1F2937',
-      font_family: 'Inter',
-      font_size: '16px',
-      border_radius: '8px',
-      shadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-      is_active: true,
-      created_at: '2024-01-15T08:00:00Z',
-      updated_at: '2024-01-15T08:00:00Z'
-    },
-    {
-      id: '2',
-      name: 'Modern Minimalist',
-      primary_color: '#3B82F6',
-      secondary_color: '#60A5FA',
-      accent_color: '#10B981',
-      background_color: '#F9FAFB',
-      text_color: '#111827',
-      font_family: 'Roboto',
-      font_size: '14px',
-      border_radius: '12px',
-      shadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-      is_active: false,
-      created_at: '2024-01-15T08:00:00Z',
-      updated_at: '2024-01-15T08:00:00Z'
-    }
-  ]);
-
-  const [activeTheme, setActiveTheme] = useState<Theme>(themes.find(t => t.is_active) || themes[0]);
-  const [isEditing, setIsEditing] = useState(false);
+  const { currentTheme, updateTheme } = useTheme();
   const { toast } = useToast();
+  
+  const [themes, setThemes] = useState<ThemeSettings[]>(() => {
+    const savedThemes = localStorage.getItem('theme_editor_themes');
+    if (savedThemes) {
+      return JSON.parse(savedThemes);
+    }
+    
+    return [
+      {
+        id: '1',
+        name: 'Classic Elegant',
+        primary_color: '#8B5CF6',
+        secondary_color: '#A78BFA',
+        accent_color: '#F59E0B',
+        background_color: '#FFFFFF',
+        text_color: '#1F2937',
+        font_family: 'Inter',
+        font_size: '16px',
+        border_radius: '8px',
+        shadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+        is_active: true,
+      },
+      {
+        id: '2',
+        name: 'Modern Minimalist',
+        primary_color: '#3B82F6',
+        secondary_color: '#60A5FA',
+        accent_color: '#10B981',
+        background_color: '#F9FAFB',
+        text_color: '#111827',
+        font_family: 'Roboto',
+        font_size: '14px',
+        border_radius: '12px',
+        shadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+        is_active: false,
+      }
+    ];
+  });
+
+  const [activeTheme, setActiveTheme] = useState<ThemeSettings>(currentTheme);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Save themes to localStorage whenever themes change
+  useEffect(() => {
+    localStorage.setItem('theme_editor_themes', JSON.stringify(themes));
+  }, [themes]);
+
+  // Update preview in real-time as user edits
+  useEffect(() => {
+    if (isEditing) {
+      updateTheme(activeTheme);
+    }
+  }, [activeTheme, isEditing, updateTheme]);
 
   const handleSaveTheme = () => {
     const updatedThemes = themes.map(theme => ({
       ...theme,
       is_active: theme.id === activeTheme.id,
-      ...(theme.id === activeTheme.id ? { ...activeTheme, updated_at: new Date().toISOString() } : {})
+      ...(theme.id === activeTheme.id ? { 
+        ...activeTheme, 
+        updated_at: new Date().toISOString() 
+      } : {})
     }));
     
     setThemes(updatedThemes);
+    updateTheme(activeTheme);
     setIsEditing(false);
+    
     toast({
-      title: "Theme disimpan",
-      description: "Pengaturan theme berhasil disimpan dan diterapkan.",
+      title: "Theme berhasil disimpan!",
+      description: "Tema telah diterapkan ke seluruh website.",
     });
   };
 
@@ -93,6 +100,8 @@ const ThemeEditor = () => {
     const originalTheme = themes.find(t => t.id === activeTheme.id);
     if (originalTheme) {
       setActiveTheme(originalTheme);
+      updateTheme(originalTheme);
+      setIsEditing(false);
       toast({
         title: "Theme direset",
         description: "Pengaturan theme dikembalikan ke kondisi semula.",
@@ -101,7 +110,7 @@ const ThemeEditor = () => {
   };
 
   const handleCreateTheme = () => {
-    const newTheme: Theme = {
+    const newTheme: ThemeSettings = {
       id: Date.now().toString(),
       name: 'Custom Theme',
       primary_color: '#8B5CF6',
@@ -114,25 +123,56 @@ const ThemeEditor = () => {
       border_radius: '8px',
       shadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
       is_active: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
     };
     
     setThemes([...themes, newTheme]);
     setActiveTheme(newTheme);
     setIsEditing(true);
+    
     toast({
       title: "Theme baru dibuat",
       description: "Theme baru berhasil dibuat dan siap untuk diedit.",
     });
   };
 
-  const handleThemeChange = (field: keyof Theme, value: string) => {
-    setActiveTheme(prev => ({
-      ...prev,
+  const handleDeleteTheme = (themeId: string) => {
+    if (themes.length <= 1) {
+      toast({
+        title: "Tidak dapat menghapus",
+        description: "Minimal harus ada satu theme.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedThemes = themes.filter(t => t.id !== themeId);
+    setThemes(updatedThemes);
+    
+    if (activeTheme.id === themeId) {
+      const newActiveTheme = updatedThemes[0];
+      setActiveTheme(newActiveTheme);
+      updateTheme(newActiveTheme);
+    }
+
+    toast({
+      title: "Theme dihapus",
+      description: "Theme berhasil dihapus.",
+    });
+  };
+
+  const handleThemeChange = (field: keyof ThemeSettings, value: string) => {
+    const updatedTheme = {
+      ...activeTheme,
       [field]: value
-    }));
+    };
+    setActiveTheme(updatedTheme);
     setIsEditing(true);
+  };
+
+  const handleSelectTheme = (theme: ThemeSettings) => {
+    setActiveTheme(theme);
+    updateTheme(theme);
+    setIsEditing(false);
   };
 
   return (
@@ -147,13 +187,13 @@ const ThemeEditor = () => {
             <PlusIcon className="h-4 w-4 mr-2" />
             Buat Theme Baru
           </Button>
-          <Button variant="outline" onClick={handleResetTheme}>
+          <Button variant="outline" onClick={handleResetTheme} disabled={!isEditing}>
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button variant="premium" onClick={handleSaveTheme}>
+          <Button variant="default" onClick={handleSaveTheme} disabled={!isEditing}>
             <BookmarkIcon className="h-4 w-4 mr-2" />
-            Simpan & Terapkan
+            {isEditing ? 'Simpan & Terapkan' : 'Tersimpan'}
           </Button>
         </div>
       </div>
@@ -178,13 +218,28 @@ const ThemeEditor = () => {
                   className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                     activeTheme.id === theme.id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                   }`}
-                  onClick={() => setActiveTheme(theme)}
+                  onClick={() => handleSelectTheme(theme)}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-medium">{theme.name}</h3>
-                    {theme.is_active && (
-                      <Badge variant="default">Aktif</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {theme.is_active && (
+                        <Badge variant="default">Aktif</Badge>
+                      )}
+                      {themes.length > 1 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTheme(theme.id);
+                          }}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <div 
@@ -214,10 +269,20 @@ const ThemeEditor = () => {
               Editor Theme: {activeTheme.name}
             </CardTitle>
             <CardDescription>
-              Kustomisasi warna, font, dan gaya visual
+              Kustomisasi warna, font, dan gaya visual. Perubahan akan langsung diterapkan!
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <Label htmlFor="theme_name">Nama Theme</Label>
+              <Input
+                id="theme_name"
+                value={activeTheme.name}
+                onChange={(e) => handleThemeChange('name', e.target.value)}
+                className="mt-2"
+              />
+            </div>
+
             <Tabs defaultValue="colors" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="colors">Warna</TabsTrigger>
@@ -334,6 +399,8 @@ const ThemeEditor = () => {
                         <SelectItem value="Open Sans">Open Sans</SelectItem>
                         <SelectItem value="Lato">Lato</SelectItem>
                         <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                        <SelectItem value="Montserrat">Montserrat</SelectItem>
+                        <SelectItem value="Source Sans Pro">Source Sans Pro</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -345,11 +412,11 @@ const ThemeEditor = () => {
                         <SelectValue placeholder="Pilih ukuran font" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="12px">12px</SelectItem>
-                        <SelectItem value="14px">14px</SelectItem>
-                        <SelectItem value="16px">16px</SelectItem>
-                        <SelectItem value="18px">18px</SelectItem>
-                        <SelectItem value="20px">20px</SelectItem>
+                        <SelectItem value="12px">12px (Kecil)</SelectItem>
+                        <SelectItem value="14px">14px (Normal)</SelectItem>
+                        <SelectItem value="16px">16px (Medium)</SelectItem>
+                        <SelectItem value="18px">18px (Besar)</SelectItem>
+                        <SelectItem value="20px">20px (Ekstra Besar)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -366,11 +433,11 @@ const ThemeEditor = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="0px">0px (Square)</SelectItem>
-                        <SelectItem value="4px">4px</SelectItem>
-                        <SelectItem value="8px">8px</SelectItem>
-                        <SelectItem value="12px">12px</SelectItem>
-                        <SelectItem value="16px">16px</SelectItem>
-                        <SelectItem value="20px">20px</SelectItem>
+                        <SelectItem value="4px">4px (Sedikit)</SelectItem>
+                        <SelectItem value="8px">8px (Normal)</SelectItem>
+                        <SelectItem value="12px">12px (Sedang)</SelectItem>
+                        <SelectItem value="16px">16px (Besar)</SelectItem>
+                        <SelectItem value="20px">20px (Ekstra Besar)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -382,11 +449,11 @@ const ThemeEditor = () => {
                         <SelectValue placeholder="Pilih shadow" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="0 1px 2px 0 rgb(0 0 0 / 0.05)">Small</SelectItem>
-                        <SelectItem value="0 4px 6px -1px rgb(0 0 0 / 0.1)">Medium</SelectItem>
-                        <SelectItem value="0 10px 15px -3px rgb(0 0 0 / 0.1)">Large</SelectItem>
-                        <SelectItem value="0 20px 25px -5px rgb(0 0 0 / 0.1)">Extra Large</SelectItem>
+                        <SelectItem value="none">None (Tanpa Bayangan)</SelectItem>
+                        <SelectItem value="0 1px 2px 0 rgb(0 0 0 / 0.05)">Small (Kecil)</SelectItem>
+                        <SelectItem value="0 4px 6px -1px rgb(0 0 0 / 0.1)">Medium (Normal)</SelectItem>
+                        <SelectItem value="0 10px 15px -3px rgb(0 0 0 / 0.1)">Large (Besar)</SelectItem>
+                        <SelectItem value="0 20px 25px -5px rgb(0 0 0 / 0.1)">Extra Large (Ekstra Besar)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -397,20 +464,20 @@ const ThemeEditor = () => {
         </Card>
       </div>
 
-      {/* Preview */}
+      {/* Live Preview */}
       <Card className="elegant-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <EyeIcon className="h-5 w-5" />
-            Preview Theme
+            Live Preview - Langsung Diterapkan ke Website!
           </CardTitle>
           <CardDescription>
-            Lihat preview theme yang sedang diedit
+            Preview theme yang sedang aktif. Perubahan langsung terlihat di website utama.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div 
-            className="p-6 rounded-lg border"
+            className="p-6 rounded-lg border transition-all duration-300"
             style={{
               backgroundColor: activeTheme.background_color,
               color: activeTheme.text_color,
@@ -421,7 +488,7 @@ const ThemeEditor = () => {
             }}
           >
             <h2 
-              className="text-2xl font-bold mb-4"
+              className="text-2xl font-bold mb-4 transition-colors duration-300"
               style={{ color: activeTheme.primary_color }}
             >
               Dhika & Sari
@@ -429,18 +496,19 @@ const ThemeEditor = () => {
             <p className="mb-4">
               Dengan penuh rasa syukur, kami mengundang Anda untuk hadir dalam acara pernikahan kami.
             </p>
-            <div className="flex gap-2">
-              <div 
-                className="px-4 py-2 rounded text-white font-medium"
+            <div className="flex flex-wrap gap-2">
+              <button 
+                className="px-4 py-2 text-white font-medium transition-all duration-300 hover:opacity-90"
                 style={{
                   backgroundColor: activeTheme.primary_color,
-                  borderRadius: activeTheme.border_radius
+                  borderRadius: activeTheme.border_radius,
+                  boxShadow: activeTheme.shadow
                 }}
               >
                 Primary Button
-              </div>
-              <div 
-                className="px-4 py-2 rounded border font-medium"
+              </button>
+              <button 
+                className="px-4 py-2 border font-medium transition-all duration-300 hover:opacity-90"
                 style={{
                   borderColor: activeTheme.secondary_color,
                   color: activeTheme.secondary_color,
@@ -448,16 +516,16 @@ const ThemeEditor = () => {
                 }}
               >
                 Secondary Button
-              </div>
-              <div 
-                className="px-4 py-2 rounded text-white font-medium"
+              </button>
+              <button 
+                className="px-4 py-2 text-white font-medium transition-all duration-300 hover:opacity-90"
                 style={{
                   backgroundColor: activeTheme.accent_color,
                   borderRadius: activeTheme.border_radius
                 }}
               >
                 Accent Button
-              </div>
+              </button>
             </div>
           </div>
         </CardContent>
