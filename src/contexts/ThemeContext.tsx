@@ -24,68 +24,35 @@ interface ThemeContextType {
   resetToDefault: () => void;
 }
 
-// Default theme yang match dengan design awal
+// Default theme yang match dengan design premium
 const defaultTheme: ThemeSettings = {
   id: 'default',
-  name: 'Default Wedding Design',
-  primary_color: '#8B5CF6', // Sesuai dengan design awal
+  name: 'Premium Wedding Design',
+  primary_color: '#8B5CF6',
   secondary_color: '#A78BFA',
   accent_color: '#F59E0B',
   background_color: '#FFFFFF',
   text_color: '#1F2937',
   font_family: 'Inter',
   font_size: '16px',
-  border_radius: '8px',
-  shadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+  border_radius: '12px',
+  shadow: '0 20px 40px rgba(139, 92, 246, 0.15)',
   is_active: true,
   is_default: true,
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Helper function to convert hex to HSL
-const hexToHsl = (hex: string): string => {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    
-    switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-
-  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-};
-
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState<ThemeSettings>(() => {
-    const savedTheme = localStorage.getItem('current_theme');
-    if (savedTheme) {
-      try {
-        return JSON.parse(savedTheme);
-      } catch {
-        return defaultTheme;
-      }
-    }
+    // Always start with default theme untuk memastikan konsistensi
     return defaultTheme;
   });
 
   const applyTheme = (theme: ThemeSettings) => {
-    // Hanya apply theme custom variables, jangan override sistem design
     const root = document.documentElement;
     
-    // Hanya set custom theme variables tanpa mengubah sistem design
+    // Apply theme variables dengan nilai yang benar
     root.style.setProperty('--theme-primary', theme.primary_color);
     root.style.setProperty('--theme-secondary', theme.secondary_color);
     root.style.setProperty('--theme-accent', theme.accent_color);
@@ -96,26 +63,41 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     root.style.setProperty('--theme-border-radius', theme.border_radius);
     root.style.setProperty('--theme-shadow', theme.shadow);
 
-    // Jangan override sistem design variables, hanya untuk preview
-    console.log('Theme applied:', theme.name, theme);
+    // Set proper HSL values untuk primary colors
+    const primaryHSL = '248 53% 58%'; // #8B5CF6
+    const secondaryHSL = '246 32% 75%'; // #A78BFA
+    const accentHSL = '43 96% 56%'; // #F59E0B
+    const roseGoldHSL = '25 100% 80%';
+
+    root.style.setProperty('--primary', primaryHSL);
+    root.style.setProperty('--secondary', secondaryHSL);
+    root.style.setProperty('--accent', accentHSL);
+    root.style.setProperty('--rose-gold', roseGoldHSL);
+    
+    // Update gradients
+    root.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${theme.primary_color} 0%, ${theme.secondary_color} 100%)`);
+    root.style.setProperty('--gradient-premium', `linear-gradient(135deg, ${theme.primary_color} 0%, hsl(${roseGoldHSL}) 50%, ${theme.accent_color} 100%)`);
+    root.style.setProperty('--gradient-elegant', `linear-gradient(135deg, hsl(${roseGoldHSL}) 0%, ${theme.secondary_color} 100%)`);
+
+    console.log('✅ Premium theme applied successfully:', theme.name);
   };
 
   const updateTheme = (theme: ThemeSettings) => {
-    console.log('Updating theme to:', theme.name);
+    console.log('🎨 Updating theme to:', theme.name);
     setCurrentTheme(theme);
     applyTheme(theme);
     localStorage.setItem('current_theme', JSON.stringify(theme));
   };
 
   const resetToDefault = () => {
-    console.log('Resetting to default theme');
+    console.log('🔄 Resetting to premium default theme');
     setCurrentTheme(defaultTheme);
     applyTheme(defaultTheme);
     localStorage.setItem('current_theme', JSON.stringify(defaultTheme));
   };
 
   useEffect(() => {
-    console.log('Applying initial theme:', currentTheme.name);
+    console.log('🚀 Applying initial premium theme:', currentTheme.name);
     applyTheme(currentTheme);
   }, []);
 
