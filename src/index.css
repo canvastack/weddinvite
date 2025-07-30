@@ -386,4 +386,46 @@
       left: 100%;
     }
   }
+
+  /* Theme-specific overrides for managed themes */
+  .theme-classic-gold {
+    /* Classic gold theme specific styles if needed */
+  }
+
+  .theme-romantic-rose {
+    /* Override animations for romantic theme */
+    .animate-blob {
+      animation: blob 10s infinite ease-in-out;
+    }
+    
+    .floating {
+      animation: floating 6s ease-in-out infinite;
+    }
+  }
+
+  .theme-modern-minimalist {
+    /* Minimal animations for modern theme */
+    .animate-blob {
+      animation: none;
+    }
+    
+    .floating {
+      animation: none;
+    }
+    
+    .shimmer::before {
+      animation: none;
+    }
+  }
+
+  /* Dynamic theme support */
+  body.theme-active {
+    transition: var(--transition-smooth);
+  }
+
+  /* Ensure selects have proper z-index in all contexts */
+  [role="listbox"],
+  [role="combobox"] {
+    z-index: 99999 !important;
+  }
 }

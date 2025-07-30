@@ -4,10 +4,11 @@ import { CoupleSection } from '@/components/CoupleSection';
 import { WeddingDetails } from '@/components/WeddingDetails';
 import { RSVPSection } from '@/components/RSVPSection';
 import { Footer } from '@/components/Footer';
+import { ThemeWrapper } from '@/components/ThemeWrapper';
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <ThemeWrapper className="min-h-screen">
       <Navigation />
       
       <main>
@@ -29,7 +30,7 @@ const Index = () => {
       </main>
       
       <Footer />
-    </div>
+    </ThemeWrapper>
   );
 };
 
