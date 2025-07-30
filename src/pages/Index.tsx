@@ -8,7 +8,7 @@ import { Footer } from '@/components/Footer';
 
 const Index = () => {
   return (
-    <div className="min-h-screen transition-all duration-300 theme-bg theme-text">
+    <div className="min-h-screen">
       <Navigation />
       
       <main>
