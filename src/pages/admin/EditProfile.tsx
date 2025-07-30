@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User } from '@/data/mockUsers';
-import { UserIcon, CameraIcon, BookmarkIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { UserIcon, CameraIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
 export const EditProfile = () => {
@@ -189,7 +189,7 @@ export const EditProfile = () => {
                 disabled={isLoading}
                 className="min-w-[200px]"
               >
-                <BookmarkIcon className="h-5 w-5 mr-2" />
+                <CheckIcon className="h-5 w-5 mr-2" />
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

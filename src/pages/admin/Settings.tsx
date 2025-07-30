@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,93 +7,159 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { 
   CogIcon, 
   ShieldCheckIcon,
   BellIcon,
   EnvelopeIcon,
   GlobeAltIcon,
-  UserIcon,
   KeyIcon,
-  CircleStackIcon
+  CircleStackIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
+import { AppSettings, settingsAPI } from '@/data/mockSettings';
+import { mockBackups } from '@/data/mockBackups';
+import { timezones } from '@/data/mockTimezones';
 
 const Settings = () => {
-  const [settings, setSettings] = useState({
-    // General Settings
-    site_name: 'Dhika & Sari Wedding',
-    site_description: 'Undangan pernikahan Dhika dan Sari',
-    site_url: 'https://dhikasari.com',
-    timezone: 'Asia/Jakarta',
-    
-    // Email Settings
-    smtp_host: 'smtp.gmail.com',
-    smtp_port: '587',
-    smtp_username: 'admin@dhikasari.com',
-    smtp_password: '',
-    email_from_name: 'Dhika & Sari Wedding',
-    email_from_address: 'noreply@dhikasari.com',
-    
-    // Notification Settings
-    email_notifications: true,
-    rsvp_notifications: true,
-    guest_notifications: true,
-    auto_reminder: true,
-    
-    // Security Settings
-    two_factor_auth: false,
-    password_expiry: 90,
-    max_login_attempts: 5,
-    session_timeout: 30,
-    
-    // API Settings
-    google_maps_api: '',
-    recaptcha_site_key: '',
-    recaptcha_secret_key: '',
-    
-    // Backup Settings
-    auto_backup: true,
-    backup_frequency: 'daily',
-    backup_retention: 30,
-  });
-
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    setIsLoading(true);
+    try {
+      const data = await settingsAPI.getSettings();
+      setSettings(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal memuat pengaturan",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({
+    if (!settings) return;
+    setSettings(prev => prev ? ({
       ...prev,
       [key]: value
-    }));
+    }) : null);
   };
 
-  const handleSaveSettings = () => {
-    toast({
-      title: "Pengaturan disimpan",
-      description: "Semua pengaturan berhasil disimpan.",
-    });
+  const handleSaveSettings = async () => {
+    if (!settings) return;
+    
+    setIsSaving(true);
+    try {
+      await settingsAPI.saveSettings(settings);
+      toast({
+        title: "Pengaturan disimpan",
+        description: "Semua pengaturan berhasil disimpan.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal menyimpan pengaturan",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleTestEmail = () => {
-    toast({
-      title: "Test email terkirim",
-      description: "Email test berhasil dikirim ke alamat yang dikonfigurasi.",
-    });
+  const handleTestEmail = async () => {
+    setIsTestingEmail(true);
+    try {
+      const result = await settingsAPI.testEmailConfiguration();
+      toast({
+        title: result.success ? "Test Email Berhasil" : "Test Email Gagal",
+        description: result.message,
+        variant: result.success ? "default" : "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal menjalankan test email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestingEmail(false);
+    }
   };
 
-  const handleExportData = () => {
-    toast({
-      title: "Export dimulai",
-      description: "Data sedang diexport, Anda akan menerima file dalam beberapa menit.",
-    });
+  const handleExportData = async () => {
+    setIsExporting(true);
+    try {
+      const result = await settingsAPI.exportData();
+      if (result.success) {
+        toast({
+          title: "Export Berhasil",
+          description: "Data berhasil diexport. File akan diunduh secara otomatis.",
+        });
+        // Simulate file download
+        const link = document.createElement('a');
+        link.href = '#';
+        link.download = `wedding_data_export_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+      }
+    } catch (error) {
+      toast({
+        title: "Export Gagal",
+        description: "Terjadi kesalahan saat mengexport data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const handleBackupNow = () => {
-    toast({
-      title: "Backup dimulai",
-      description: "Backup manual sedang dijalankan.",
-    });
+  const handleBackupNow = async () => {
+    setIsBackingUp(true);
+    try {
+      const result = await settingsAPI.createBackup();
+      if (result.success) {
+        toast({
+          title: "Backup Berhasil",
+          description: `Backup manual berhasil dibuat dengan ID: ${result.backupId}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Backup Gagal",
+        description: "Terjadi kesalahan saat membuat backup",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBackingUp(false);
+    }
   };
+
+  if (isLoading || !settings) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -102,8 +168,12 @@ const Settings = () => {
           <h1 className="text-3xl font-bold text-gradient">Pengaturan</h1>
           <p className="text-muted-foreground">Konfigurasi sistem dan pengaturan aplikasi</p>
         </div>
-        <Button variant="premium" onClick={handleSaveSettings}>
-          Simpan Semua Pengaturan
+        <Button 
+          variant="premium" 
+          onClick={handleSaveSettings}
+          disabled={isSaving}
+        >
+          {isSaving ? 'Menyimpan...' : 'Simpan Semua Pengaturan'}
         </Button>
       </div>
 
@@ -161,13 +231,22 @@ const Settings = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Input
-                  id="timezone"
-                  value={settings.timezone}
-                  onChange={(e) => handleSettingChange('timezone', e.target.value)}
-                  placeholder="Asia/Jakarta"
-                />
+                <Label>Timezone</Label>
+                <Select 
+                  value={settings.timezone} 
+                  onValueChange={(value) => handleSettingChange('timezone', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timezones.map((tz) => (
+                      <SelectItem key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
@@ -250,8 +329,12 @@ const Settings = () => {
               </div>
               
               <div className="pt-4">
-                <Button onClick={handleTestEmail} variant="outline">
-                  Test Email Configuration
+                <Button 
+                  onClick={handleTestEmail} 
+                  variant="outline"
+                  disabled={isTestingEmail}
+                >
+                  {isTestingEmail ? 'Testing...' : 'Test Email Configuration'}
                 </Button>
               </div>
             </CardContent>
@@ -462,15 +545,19 @@ const Settings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Backup Frequency</Label>
-                  <select 
-                    className="w-full p-2 border rounded"
-                    value={settings.backup_frequency}
-                    onChange={(e) => handleSettingChange('backup_frequency', e.target.value)}
+                  <Select 
+                    value={settings.backup_frequency} 
+                    onValueChange={(value) => handleSettingChange('backup_frequency', value)}
                   >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih frekuensi backup" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="backup_retention">Backup Retention (hari)</Label>
@@ -484,12 +571,58 @@ const Settings = () => {
               </div>
               
               <div className="flex gap-2 pt-4">
-                <Button onClick={handleBackupNow} variant="outline">
-                  Backup Sekarang
+                <Button 
+                  onClick={handleBackupNow} 
+                  variant="outline"
+                  disabled={isBackingUp}
+                >
+                  {isBackingUp ? 'Creating Backup...' : 'Backup Sekarang'}
                 </Button>
-                <Button onClick={handleExportData} variant="outline">
-                  Export Data
+                <Button 
+                  onClick={handleExportData} 
+                  variant="outline"
+                  disabled={isExporting}
+                >
+                  {isExporting ? 'Exporting...' : 'Export Data'}
                 </Button>
+              </div>
+
+              {/* Backup History */}
+              <div className="pt-6">
+                <h3 className="font-medium mb-4">Riwayat Backup</h3>
+                <div className="space-y-2">
+                  {mockBackups.map((backup) => (
+                    <div key={backup.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          {backup.status === 'completed' ? (
+                            <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                          ) : backup.status === 'in_progress' ? (
+                            <ClockIcon className="h-5 w-5 text-yellow-500" />
+                          ) : (
+                            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{backup.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(backup.created_at).toLocaleDateString('id-ID')} - {backup.size}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={backup.type === 'auto' ? 'secondary' : 'outline'}>
+                          {backup.type}
+                        </Badge>
+                        {backup.status === 'completed' && (
+                          <Button size="sm" variant="ghost">
+                            Download
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
