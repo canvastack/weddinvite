@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
@@ -27,12 +26,12 @@ export const ThemeToggle = () => {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="premium-hover rounded-full border-2 border-primary/30 backdrop-blur-premium bg-card/80 hover:border-primary/50 hover:bg-primary/10 hover:shadow-glow transition-all duration-300"
+      className="smoke-effect premium-hover rounded-full border border-primary/20 backdrop-blur-sm"
     >
       {theme === 'light' ? (
-        <MoonIcon className="h-6 w-6 text-primary transition-transform duration-300 hover:rotate-12" />
+        <MoonIcon className="h-5 w-5 text-primary" />
       ) : (
-        <SunIcon className="h-6 w-6 text-primary transition-transform duration-300 hover:rotate-12" />
+        <SunIcon className="h-5 w-5 text-primary" />
       )}
     </Button>
   );

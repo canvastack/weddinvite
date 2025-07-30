@@ -1,4 +1,3 @@
-
 import { Navigation } from '@/components/Navigation';
 import { WeddingHero } from '@/components/WeddingHero';
 import { CoupleSection } from '@/components/CoupleSection';
