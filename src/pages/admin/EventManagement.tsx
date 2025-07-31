@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,80 +15,38 @@ import {
   ClockIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
-import { useToast } from '@/hooks/use-toast';
+import { useEvents, Event } from '@/hooks/useEvents';
 import EventFormWithMap from '@/components/admin/EventFormWithMap';
 
-interface Event {
-  id: string;
-  title: string;
-  event_type: 'akad' | 'resepsi';
-  venue_name: string;
-  venue_address: string;
-  venue_city: string;
-  venue_province: string;
-  venue_latitude: number;
-  venue_longitude: number;
-  event_date: string;
-  start_time: string;
-  end_time: string;
-  description?: string;
-  dress_code?: string;
-  contact_person?: string;
-  contact_phone?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 const EventManagement = () => {
-  // Create initial mock events that match the Event interface
-  const mockEvents: Event[] = [
-    {
-      id: '1',
-      title: 'Akad Nikah',
-      event_type: 'akad',
-      venue_name: 'Masjid Al-Ikhlas',
-      venue_address: 'Jl. Raya Bekasi No. 123, Bekasi',
-      venue_city: 'Bekasi',
-      venue_province: 'Jawa Barat',
-      venue_latitude: -6.2088,
-      venue_longitude: 107.0456,
-      event_date: '2024-02-14',
-      start_time: '08:00',
-      end_time: '10:00',
-      description: 'Akad nikah akan dilaksanakan di Masjid Al-Ikhlas',
-      dress_code: 'Formal',
-      contact_person: 'Pak Ahmad',
-      contact_phone: '+62 812-3456-7890',
-      created_at: '2024-01-15T08:00:00Z',
-      updated_at: '2024-01-15T08:00:00Z'
-    },
-    {
-      id: '2',
-      title: 'Resepsi Pernikahan',
-      event_type: 'resepsi',
-      venue_name: 'Gedung Serbaguna',
-      venue_address: 'Jl. Ahmad Yani No. 456, Jakarta',
-      venue_city: 'Jakarta',
-      venue_province: 'DKI Jakarta',
-      venue_latitude: -6.1751,
-      venue_longitude: 106.8650,
-      event_date: '2024-02-14',
-      start_time: '18:00',
-      end_time: '21:00',
-      description: 'Resepsi pernikahan untuk keluarga dan teman',
-      dress_code: 'Semi Formal',
-      contact_person: 'Ibu Siti',
-      contact_phone: '+62 813-7890-1234',
-      created_at: '2024-01-15T08:00:00Z',
-      updated_at: '2024-01-15T08:00:00Z'
-    }
-  ];
-
-  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
+  
+  // Use the custom hook for event management
+  const { 
+    events, 
+    isLoading, 
+    addEvent, 
+    updateEvent, 
+    deleteEvent, 
+    getEventById 
+  } = useEvents();
+
+  // Handle URL params for direct navigation
+  useEffect(() => {
+    const viewId = searchParams.get('view');
+    const editId = searchParams.get('edit');
+    
+    if (editId) {
+      const event = getEventById(editId);
+      if (event) {
+        setEditingEvent(event);
+        setIsDialogOpen(true);
+      }
+    }
+  }, [searchParams, getEventById]);
 
   const handleAddEvent = () => {
     setEditingEvent(null);
@@ -99,17 +58,24 @@ const EventManagement = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteEvent = (eventId: string) => {
-    setEvents(events.filter(event => event.id !== eventId));
-    toast({
-      title: "Acara dihapus",
-      description: "Data acara berhasil dihapus dari sistem.",
-    });
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId);
+      // Clear URL params if we're viewing/editing the deleted event
+      const viewId = searchParams.get('view');
+      const editId = searchParams.get('edit');
+      if (viewId === eventId || editId === eventId) {
+        setSearchParams({});
+        setEditingEvent(null);
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
-  const handleEventSubmit = (data: Event & { venue_latitude: number; venue_longitude: number }) => {
-    const eventData: Event = {
-      id: editingEvent?.id || Date.now().toString(),
+  const handleEventSubmit = async (data: Event & { venue_latitude: number; venue_longitude: number }) => {
+    const eventData = {
       title: data.title,
       event_type: data.event_type,
       venue_name: data.venue_name,
@@ -125,26 +91,21 @@ const EventManagement = () => {
       dress_code: data.dress_code,
       contact_person: data.contact_person,
       contact_phone: data.contact_phone,
-      created_at: editingEvent?.created_at || new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
 
-    if (editingEvent) {
-      setEvents(events.map(event => event.id === editingEvent.id ? eventData : event));
-      toast({
-        title: "Acara diperbarui",
-        description: "Data acara berhasil diperbarui.",
-      });
-    } else {
-      setEvents([...events, eventData]);
-      toast({
-        title: "Acara ditambahkan",
-        description: "Acara baru berhasil ditambahkan.",
-      });
-    }
+    try {
+      if (editingEvent) {
+        await updateEvent(editingEvent.id, eventData);
+      } else {
+        await addEvent(eventData);
+      }
 
-    setIsDialogOpen(false);
-    setEditingEvent(null);
+      setIsDialogOpen(false);
+      setEditingEvent(null);
+      setSearchParams({}); // Clear URL params
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
   const handleFormCancel = () => {

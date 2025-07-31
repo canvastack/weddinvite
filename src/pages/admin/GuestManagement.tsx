@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,18 +18,48 @@ import {
   EnvelopeIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline';
-import { mockGuests, Guest } from '@/data/mockGuests';
-import { useToast } from '@/hooks/use-toast';
+import { Guest } from '@/data/mockGuests';
+import { useGuests } from '@/hooks/useGuests';
 import GuestDetailView from '@/components/admin/GuestDetailView';
 
 const GuestManagement = () => {
-  const [guests, setGuests] = useState<Guest[]>(mockGuests);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [viewingGuest, setViewingGuest] = useState<Guest | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const { toast } = useToast();
+  
+  // Use the custom hook for guest management
+  const { 
+    guests, 
+    isLoading, 
+    addGuest, 
+    updateGuest, 
+    deleteGuest, 
+    getGuestById 
+  } = useGuests();
+
+  // Handle URL params for direct navigation
+  useEffect(() => {
+    const viewId = searchParams.get('view');
+    const editId = searchParams.get('edit');
+    
+    if (viewId) {
+      const guest = getGuestById(viewId);
+      if (guest) {
+        setViewingGuest(guest);
+      }
+    }
+    
+    if (editId) {
+      const guest = getGuestById(editId);
+      if (guest) {
+        setEditingGuest(guest);
+        setIsDialogOpen(true);
+      }
+    }
+  }, [searchParams, getGuestById]);
 
   const handleAddGuest = () => {
     setEditingGuest(null);
@@ -44,20 +75,28 @@ const GuestManagement = () => {
     setViewingGuest(guest);
   };
 
-  const handleDeleteGuest = (guestId: string) => {
-    setGuests(guests.filter(guest => guest.id !== guestId));
-    toast({
-      title: "Tamu dihapus",
-      description: "Data tamu berhasil dihapus dari sistem.",
-    });
+  const handleDeleteGuest = async (guestId: string) => {
+    try {
+      await deleteGuest(guestId);
+      // Clear URL params if we're viewing/editing the deleted guest
+      const viewId = searchParams.get('view');
+      const editId = searchParams.get('edit');
+      if (viewId === guestId || editId === guestId) {
+        setSearchParams({});
+        setViewingGuest(null);
+        setEditingGuest(null);
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
-  const handleSubmitGuest = (e: React.FormEvent) => {
+  const handleSubmitGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     
-    const guestData: Guest = {
-      id: editingGuest?.id || Date.now().toString(),
+    const guestData = {
       name: formData.get('name') as string,
       email: formData.get('email') as string || undefined,
       phone: formData.get('phone') as string || undefined,
@@ -71,26 +110,21 @@ const GuestManagement = () => {
       message: formData.get('message') as string || undefined,
       invited_by: '1', // Default admin
       rsvp_date: editingGuest?.rsvp_date,
-      created_at: editingGuest?.created_at || new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
 
-    if (editingGuest) {
-      setGuests(guests.map(guest => guest.id === editingGuest.id ? guestData : guest));
-      toast({
-        title: "Tamu diperbarui",
-        description: "Data tamu berhasil diperbarui.",
-      });
-    } else {
-      setGuests([...guests, guestData]);
-      toast({
-        title: "Tamu ditambahkan",
-        description: "Tamu baru berhasil ditambahkan.",
-      });
-    }
+    try {
+      if (editingGuest) {
+        await updateGuest(editingGuest.id, guestData);
+      } else {
+        await addGuest(guestData);
+      }
 
-    setIsDialogOpen(false);
-    setEditingGuest(null);
+      setIsDialogOpen(false);
+      setEditingGuest(null);
+      setSearchParams({}); // Clear URL params
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
   const filteredGuests = guests.filter(guest => {

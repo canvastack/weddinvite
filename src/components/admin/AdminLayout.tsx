@@ -1,9 +1,10 @@
 
-import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { User } from '@/data/mockUsers';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useTheme } from '@/context/ThemeContext';
 import { 
   HomeIcon,
   UsersIcon,
@@ -25,18 +26,9 @@ import { cn } from '@/lib/utils';
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const adminUser = localStorage.getItem('adminUser');
-    if (adminUser) {
-      setUser(JSON.parse(adminUser));
-    } else {
-      navigate('/admin/login');
-    }
-  }, [navigate]);
+  const { user, isLoading, logout } = useAdminAuth();
+  const { currentTheme } = useTheme();
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
@@ -50,10 +42,13 @@ const AdminLayout = () => {
     { name: 'Pengaturan', href: '/admin/settings', icon: CogIcon },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminUser');
-    navigate('/admin/login');
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null; // Will redirect to login
@@ -216,7 +211,7 @@ const AdminLayout = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleLogout}
+                  onClick={logout}
                   className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 hover-glow"
                 >
                   <ArrowRightOnRectangleIcon className="h-5 w-5" />

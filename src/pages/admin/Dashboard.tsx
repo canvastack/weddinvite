@@ -1,40 +1,57 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  UsersIcon, 
-  EnvelopeIcon, 
-  MapPinIcon, 
-  ChartBarIcon,
   PlusIcon,
   EyeIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  EnvelopeIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline';
-import { mockGuests } from '@/data/mockGuests';
+import { useGuests } from '@/hooks/useGuests';
+import { useEvents } from '@/hooks/useEvents';
+import { DashboardStats } from '@/components/admin/DashboardStats';
+import { RecentGuestsList } from '@/components/admin/RecentGuestsList';
+import { EventsList } from '@/components/admin/EventsList';
+import { Guest, mockGuests } from '@/data/mockGuests';
+import { Event } from '@/hooks/useEvents';
 import { mockInvitations } from '@/data/mockInvitations';
 import { mockEvents } from '@/data/mockEvents';
-import { mockUsers } from '@/data/mockUsers';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-
+  const navigate = useNavigate();
+  
+  // Hooks for data management
+  const { guests, getGuestStats } = useGuests();
+  const { events } = useEvents();
+  
   // Statistics
-  const totalGuests = mockGuests.length;
-  const attendingGuests = mockGuests.filter(g => g.attendance_status === 'attending').length;
-  const pendingGuests = mockGuests.filter(g => g.attendance_status === 'pending').length;
+  const guestStats = getGuestStats();
   const totalInvitations = mockInvitations.length;
-  const sentInvitations = mockInvitations.filter(i => i.status === 'sent' || i.status === 'opened' || i.status === 'responded').length;
 
-  const stats = [
-    { title: 'Total Tamu', value: totalGuests, icon: UsersIcon, color: 'bg-blue-500' },
-    { title: 'Konfirmasi Hadir', value: attendingGuests, icon: UsersIcon, color: 'bg-green-500' },
-    { title: 'Menunggu Konfirmasi', value: pendingGuests, icon: UsersIcon, color: 'bg-yellow-500' },
-    { title: 'Undangan Terkirim', value: sentInvitations, icon: EnvelopeIcon, color: 'bg-purple-500' },
-  ];
+  // Handlers for guest actions
+  const handleViewGuest = (guest: Guest) => {
+    // Navigate to guest detail or open modal
+    navigate(`/admin/guests?view=${guest.id}`);
+  };
+
+  const handleEditGuest = (guest: Guest) => {
+    navigate(`/admin/guests?edit=${guest.id}`);
+  };
+
+  const handleViewEvent = (event: Event) => {
+    navigate(`/admin/events?view=${event.id}`);
+  };
+
+  const handleEditEvent = (event: Event) => {
+    navigate(`/admin/events?edit=${event.id}`);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -51,23 +68,11 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="elegant-card">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                </div>
-                <div className={`${stat.color} p-3 rounded-full`}>
-                  <stat.icon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <DashboardStats 
+        guestStats={guestStats} 
+        eventCount={events.length}
+        invitationCount={totalInvitations}
+      />
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -82,61 +87,18 @@ const Dashboard = () => {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Guests */}
-            <Card className="elegant-card">
-              <CardHeader>
-                <CardTitle>Tamu Terbaru</CardTitle>
-                <CardDescription>Konfirmasi terbaru dari tamu</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockGuests.slice(0, 5).map((guest) => (
-                    <div key={guest.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{guest.name}</p>
-                        <p className="text-sm text-muted-foreground">{guest.email}</p>
-                      </div>
-                      <Badge variant={
-                        guest.attendance_status === 'attending' ? 'default' :
-                        guest.attendance_status === 'pending' ? 'secondary' :
-                        'destructive'
-                      }>
-                        {guest.attendance_status === 'attending' ? 'Hadir' :
-                         guest.attendance_status === 'pending' ? 'Pending' :
-                         guest.attendance_status === 'maybe' ? 'Mungkin' : 'Tidak Hadir'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <RecentGuestsList 
+              guests={guests}
+              onViewGuest={handleViewGuest}
+              onEditGuest={handleEditGuest}
+            />
 
             {/* Event Info */}
-            <Card className="elegant-card">
-              <CardHeader>
-                <CardTitle>Acara Pernikahan</CardTitle>
-                <CardDescription>Informasi acara yang akan datang</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockEvents.map((event) => (
-                    <div key={event.id} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">{event.title}</h3>
-                        <Badge>{event.event_type}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPinIcon className="h-4 w-4 mr-1" />
-                        {event.venue_name}
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground mt-1">
-                        <span>{event.date} • {event.start_time} - {event.end_time}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <EventsList 
+              events={events}
+              onViewEvent={handleViewEvent}
+              onEditEvent={handleEditEvent}
+            />
           </div>
         </TabsContent>
 
