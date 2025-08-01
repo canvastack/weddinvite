@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme, Theme } from '@/context/ThemeContext';
+import { restoreDefaultTheme, createCurrentStateBackup } from '@/data/defaultThemeBackup';
 
 const ThemeManager = () => {
   const { 
@@ -32,31 +33,52 @@ const ThemeManager = () => {
   
   const [editingTheme, setEditingTheme] = useState<Theme>(currentTheme);
   const [isEditing, setIsEditing] = useState(false);
+  const [backupCreated, setBackupCreated] = useState(false);
   const { toast } = useToast();
 
   const handleSaveTheme = () => {
     if (editingTheme.is_default) {
       toast({
-        title: "Cannot modify default theme",
-        description: "The default theme is protected and cannot be modified.",
-        variant: "destructive"
+        title: "Tidak dapat mengubah tema default",
+        description: "Tema default tidak dapat diubah",
+        variant: "destructive",
       });
       return;
     }
 
-    const updatedTheme = {
-      ...editingTheme,
-      updated_at: new Date().toISOString()
-    };
-    
-    updateTheme(updatedTheme);
-    setCurrentTheme(updatedTheme);
+    // Create backup before applying theme
+    if (!backupCreated) {
+      createCurrentStateBackup();
+      setBackupCreated(true);
+    }
+
+    updateTheme(editingTheme);
+    setCurrentTheme(editingTheme);
     setIsEditing(false);
     
     toast({
-      title: "Theme saved",
-      description: "Theme has been saved and applied successfully.",
+      title: "Tema disimpan",
+      description: "Tema telah disimpan dan diterapkan ke halaman utama",
     });
+  };
+
+  const handleRestoreDefault = () => {
+    try {
+      restoreDefaultTheme();
+      resetToDefault();
+      setBackupCreated(false);
+      
+      toast({
+        title: "Tema dikembalikan",
+        description: "Design telah dikembalikan ke default 100% seperti semula",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal mengembalikan tema default",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCreateTheme = () => {
@@ -210,9 +232,9 @@ const ThemeManager = () => {
             <PlusIcon className="h-4 w-4 mr-2" />
             Create New Theme
           </Button>
-          <Button variant="outline" onClick={resetToDefault}>
+          <Button variant="outline" onClick={handleRestoreDefault}>
             <ArrowPathIcon className="h-4 w-4 mr-2" />
-            Reset to Default
+            Restore Default 100%
           </Button>
           {!editingTheme.is_default && (
             <Button variant="premium" onClick={handleSaveTheme}>

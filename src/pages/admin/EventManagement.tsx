@@ -17,12 +17,15 @@ import {
 } from '@heroicons/react/24/outline';
 import { useEvents, Event } from '@/hooks/useEvents';
 import EventFormWithMap from '@/components/admin/EventFormWithMap';
+import { EventDetailModal } from '@/components/admin/EventDetailModal';
 
 const EventManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   // Use the custom hook for event management
   const { 
@@ -56,6 +59,22 @@ const EventManagement = () => {
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event);
     setIsDialogOpen(true);
+  };
+
+  const handleViewEvent = (event: Event) => {
+    setViewingEvent(event);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setViewingEvent(null);
+  };
+
+  const handleEditFromDetail = (event: Event) => {
+    setIsDetailModalOpen(false);
+    setViewingEvent(null);
+    handleEditEvent(event);
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -230,7 +249,11 @@ const EventManagement = () => {
                   )}
                   
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleViewEvent(event)}
+                    >
                       <EyeIcon className="h-4 w-4 mr-1" />
                       Detail
                     </Button>
@@ -258,6 +281,14 @@ const EventManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Event Detail Modal */}
+      <EventDetailModal
+        event={viewingEvent}
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetailModal}
+        onEdit={handleEditFromDetail}
+      />
     </div>
   );
 };

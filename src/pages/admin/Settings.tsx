@@ -22,17 +22,26 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
+import { useSettings } from '@/hooks/useSettings';
 import { AppSettings, settingsAPI } from '@/data/mockSettings';
 import { mockBackups } from '@/data/mockBackups';
 import { timezones } from '@/data/mockTimezones';
 
 const Settings = () => {
-  const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isTestingEmail, setIsTestingEmail] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isBackingUp, setIsBackingUp] = useState(false);
+  const { 
+    settings, 
+    isLoading, 
+    isSaving, 
+    isTestingEmail, 
+    isExporting, 
+    isBackingUp,
+    loadSettings,
+    saveSettings,
+    testEmailConfiguration,
+    exportData,
+    createBackup,
+    updateSetting
+  } = useSettings();
   const { toast } = useToast();
 
   useEffect(() => {
