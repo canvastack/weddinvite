@@ -1,43 +1,33 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User } from '@/data/mockUsers';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthUser } from '@/utils/auth';
 
 export const useAdminAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading, logout: authLogout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const adminUser = localStorage.getItem('adminUser');
-        if (adminUser) {
-          const userData = JSON.parse(adminUser);
-          setUser(userData);
-        } else {
-          navigate('/admin/login');
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+    if (!isLoading) {
+      if (!isAuthenticated) {
         navigate('/admin/login');
-      } finally {
-        setIsLoading(false);
+      } else if (user && user.role !== 'admin') {
+        // Regular users can't access admin panel
+        navigate('/');
       }
-    };
+    }
+  }, [isAuthenticated, isLoading, user, navigate]);
 
-    checkAuth();
-  }, [navigate]);
-
-  const logout = () => {
-    localStorage.removeItem('adminUser');
-    setUser(null);
+  const logout = async () => {
+    await authLogout();
     navigate('/admin/login');
   };
 
   return {
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: isAuthenticated && user?.role === 'admin',
     logout
   };
 };
