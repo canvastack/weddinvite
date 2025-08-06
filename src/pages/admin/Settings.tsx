@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
 import { useSettings } from '@/hooks/useSettings';
-import { AppSettings, settingsAPI } from '@/data/mockSettings';
 import { mockBackups } from '@/data/mockBackups';
 import { timezones } from '@/data/mockTimezones';
 
@@ -46,117 +45,43 @@ const Settings = () => {
 
   useEffect(() => {
     loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    setIsLoading(true);
-    try {
-      const data = await settingsAPI.getSettings();
-      setSettings(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal memuat pengaturan",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [loadSettings]);
 
   const handleSettingChange = (key: string, value: any) => {
-    if (!settings) return;
-    setSettings(prev => prev ? ({
-      ...prev,
-      [key]: value
-    }) : null);
+    updateSetting(key as any, value);
   };
 
   const handleSaveSettings = async () => {
     if (!settings) return;
     
-    setIsSaving(true);
     try {
-      await settingsAPI.saveSettings(settings);
-      toast({
-        title: "Pengaturan disimpan",
-        description: "Semua pengaturan berhasil disimpan.",
-      });
+      await saveSettings(settings);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal menyimpan pengaturan",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
+      // Error handling is already done in the hook
     }
   };
 
   const handleTestEmail = async () => {
-    setIsTestingEmail(true);
     try {
-      const result = await settingsAPI.testEmailConfiguration();
-      toast({
-        title: result.success ? "Test Email Berhasil" : "Test Email Gagal",
-        description: result.message,
-        variant: result.success ? "default" : "destructive",
-      });
+      await testEmailConfiguration();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal menjalankan test email",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTestingEmail(false);
+      // Error handling is already done in the hook
     }
   };
 
   const handleExportData = async () => {
-    setIsExporting(true);
     try {
-      const result = await settingsAPI.exportData();
-      if (result.success) {
-        toast({
-          title: "Export Berhasil",
-          description: "Data berhasil diexport. File akan diunduh secara otomatis.",
-        });
-        // Simulate file download
-        const link = document.createElement('a');
-        link.href = '#';
-        link.download = `wedding_data_export_${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-      }
+      await exportData();
     } catch (error) {
-      toast({
-        title: "Export Gagal",
-        description: "Terjadi kesalahan saat mengexport data",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
+      // Error handling is already done in the hook
     }
   };
 
   const handleBackupNow = async () => {
-    setIsBackingUp(true);
     try {
-      const result = await settingsAPI.createBackup();
-      if (result.success) {
-        toast({
-          title: "Backup Berhasil",
-          description: `Backup manual berhasil dibuat dengan ID: ${result.backupId}`,
-        });
-      }
+      await createBackup();
     } catch (error) {
-      toast({
-        title: "Backup Gagal",
-        description: "Terjadi kesalahan saat membuat backup",
-        variant: "destructive",
-      });
-    } finally {
-      setIsBackingUp(false);
+      // Error handling is already done in the hook
     }
   };
 
