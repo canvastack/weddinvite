@@ -34,7 +34,15 @@ export const hashPassword = async (password: string): Promise<string> => {
 
 // Verify password
 export const verifyPassword = async (password: string, hash: string): Promise<boolean> => {
-  return await bcrypt.compare(password, hash);
+  try {
+    console.log('Verifying password:', { passwordLength: password.length, hashLength: hash.length, hashPrefix: hash.substring(0, 7) });
+    const result = await bcrypt.compare(password, hash);
+    console.log('bcrypt.compare result:', result);
+    return result;
+  } catch (error) {
+    console.error('Password verification error:', error);
+    return false;
+  }
 };
 
 // Login function
