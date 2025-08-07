@@ -35,10 +35,7 @@ export const hashPassword = async (password: string): Promise<string> => {
 // Verify password
 export const verifyPassword = async (password: string, hash: string): Promise<boolean> => {
   try {
-    console.log('Verifying password:', { passwordLength: password.length, hashLength: hash.length, hashPrefix: hash.substring(0, 7) });
-    const result = await bcrypt.compare(password, hash);
-    console.log('bcrypt.compare result:', result);
-    return result;
+    return await bcrypt.compare(password, hash);
   } catch (error) {
     console.error('Password verification error:', error);
     return false;
@@ -48,27 +45,6 @@ export const verifyPassword = async (password: string, hash: string): Promise<bo
 // Login function
 export const login = async (email: string, password: string) => {
   try {
-    console.log('Login attempt for:', email);
-    
-    // TEMPORARY: If password is "password", generate a fresh hash and update the database
-    if (password === 'password') {
-      console.log('Generating fresh hash for password "password"');
-      const newHash = await hashPassword('password');
-      console.log('Generated hash:', newHash);
-      
-      // Update the user's password hash in the database
-      const { error: updateError } = await supabase
-        .from('app_users')
-        .update({ password_hash: newHash })
-        .eq('email', email.toLowerCase());
-        
-      if (updateError) {
-        console.error('Failed to update hash:', updateError);
-      } else {
-        console.log('Updated hash in database');
-      }
-    }
-    
     // Get user by email
     const { data: user, error: userError } = await supabase
       .from('app_users')
@@ -77,21 +53,14 @@ export const login = async (email: string, password: string) => {
       .eq('is_active', true)
       .single();
 
-    console.log('Database query result:', { user, userError });
-
     if (userError || !user) {
-      console.log('User not found or database error:', userError);
       throw new Error('Invalid email or password');
     }
-
-    console.log('User found:', user.email, 'Hash length:', user.password_hash?.length);
     
     // Verify password
     const isValidPassword = await verifyPassword(password, user.password_hash);
-    console.log('Password verification result:', isValidPassword);
     
     if (!isValidPassword) {
-      console.log('Password verification failed');
       throw new Error('Invalid email or password');
     }
 
