@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { mockUsers, User } from '@/data/mockUsers';
+import { login } from '@/utils/auth';
+import { useAuth } from '@/hooks/useAuth';
 import { HeartIcon, UserIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export const Login = () => {
@@ -13,32 +14,43 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      const user = mockUsers.find(u => u.email === email);
-      
-      if (user && password === 'password') {
-        localStorage.setItem('adminUser', JSON.stringify(user));
-        navigate('/admin');
-      } else {
-        setError('Email atau password tidak valid');
-      }
+    try {
+      await login(email, password);
+      await refreshAuth(); // Refresh auth state after login
+      navigate('/admin');
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleAutoLogin = (user: User) => {
+  const demoUsers = [
+    { email: 'admin@dhikasari.com', password: 'password', name: 'Super Admin', role: 'admin' },
+    { email: 'dhika@dhikasari.com', password: 'password', name: 'Dhika Pratama', role: 'admin' },
+    { email: 'sari@dhikasari.com', password: 'password', name: 'Sari Dewi', role: 'admin' }
+  ];
+
+  const handleDemoLogin = async (demoUser: any) => {
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.setItem('adminUser', JSON.stringify(user));
+    setError('');
+    
+    try {
+      await login(demoUser.email, demoUser.password);
+      await refreshAuth();
       navigate('/admin');
-    }, 500);
+    } catch (err: any) {
+      setError(err.message || 'Demo login failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -128,12 +140,12 @@ export const Login = () => {
               Quick Demo Login
             </p>
             <div className="grid grid-cols-1 gap-2">
-              {mockUsers.map((user) => (
+              {demoUsers.map((user, index) => (
                 <Button
-                  key={user.id}
+                  key={index}
                   variant="outline"
                   size="sm"
-                  onClick={() => handleAutoLogin(user)}
+                  onClick={() => handleDemoLogin(user)}
                   disabled={isLoading}
                   className="justify-start text-left hover-glow"
                 >

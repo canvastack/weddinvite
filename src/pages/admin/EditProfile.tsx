@@ -2,62 +2,53 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User } from '@/data/mockUsers';
+import { useAuth } from '@/hooks/useAuth';
 import { UserIcon, CameraIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
 export const EditProfile = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isLoading, refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     avatar: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const adminUser = localStorage.getItem('adminUser');
-    if (adminUser) {
-      const userData = JSON.parse(adminUser);
-      setUser(userData);
+    if (user) {
       setFormData({
-        name: userData.name,
-        email: userData.email,
-        avatar: userData.avatar || '',
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || '',
       });
     }
-  }, []);
+  }, [user]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSaving(true);
     setSuccess(false);
 
-    // Simulate API call
-    setTimeout(() => {
-      if (user) {
-        const updatedUser = {
-          ...user,
-          name: formData.name,
-          email: formData.email,
-          avatar: formData.avatar,
-          updated_at: new Date().toISOString(),
-        };
-        
-        localStorage.setItem('adminUser', JSON.stringify(updatedUser));
-        setUser(updatedUser);
+    try {
+      // In a real app, this would make an API call to update user profile
+      // For now, we'll simulate the update
+      setTimeout(async () => {
         setSuccess(true);
-      }
-      setIsLoading(false);
-    }, 1000);
+        await refreshAuth(); // Refresh auth state to get updated user data
+        setIsSaving(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Profile update error:', error);
+      setIsSaving(false);
+    }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // In real app, this would upload to server
       const reader = new FileReader();
       reader.onload = (e) => {
         setFormData(prev => ({ ...prev, avatar: e.target?.result as string }));
@@ -65,6 +56,14 @@ export const EditProfile = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -186,11 +185,11 @@ export const EditProfile = () => {
                 type="submit"
                 variant="premium"
                 size="lg"
-                disabled={isLoading}
+                disabled={isSaving}
                 className="min-w-[200px]"
               >
                 <CheckIcon className="h-5 w-5 mr-2" />
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>

@@ -1,17 +1,20 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/useAuth';
+import { useDataSync } from '@/hooks/useDataSync';
 import { 
   PlusIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   EnvelopeIcon,
-  MapPinIcon
+  MapPinIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useGuests } from '@/hooks/useGuests';
 import { useEvents } from '@/hooks/useEvents';
@@ -26,6 +29,8 @@ import { mockEvents } from '@/data/mockEvents';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { lastSync, isSyncing, error } = useDataSync();
   
   // Hooks for data management
   const { guests, getGuestStats } = useGuests();
@@ -37,7 +42,6 @@ const Dashboard = () => {
 
   // Handlers for guest actions
   const handleViewGuest = (guest: Guest) => {
-    // Navigate to guest detail or open modal
     navigate(`/admin/guests?view=${guest.id}`);
   };
 
@@ -55,17 +59,52 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header with Sync Status */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gradient">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Kelola undangan pernikahan Anda</p>
+          <div className="flex items-center gap-4 text-muted-foreground">
+            <p>Kelola undangan pernikahan Anda</p>
+            {error && (
+              <div className="flex items-center gap-2 text-red-500">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                <span className="text-sm">Sync Error</span>
+              </div>
+            )}
+            {lastSync && !error && (
+              <div className="flex items-center gap-2 text-green-500">
+                <CheckCircleIcon className="h-4 w-4" />
+                <span className="text-sm">Synced</span>
+              </div>
+            )}
+          </div>
         </div>
-        <Button variant="premium" className="smoke-effect">
+        <Button variant="premium" className="smoke-effect" onClick={() => navigate('/admin/guests')}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Tambah Tamu
         </Button>
       </div>
+
+      {/* Sync Status Card */}
+      {(isSyncing || error) && (
+        <Card className="elegant-card border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              {isSyncing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span className="text-sm">Menyinkronkan data dengan frontend...</span>
+                </>
+              ) : error ? (
+                <>
+                  <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
+                  <span className="text-sm text-red-500">Gagal sinkronisasi: {error}</span>
+                </>
+              ) : null}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <DashboardStats 
@@ -110,7 +149,7 @@ const Dashboard = () => {
                   <CardTitle>Manajemen Tamu</CardTitle>
                   <CardDescription>Kelola daftar tamu undangan</CardDescription>
                 </div>
-                <Button variant="premium">
+                <Button variant="premium" onClick={() => navigate('/admin/guests')}>
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Tambah Tamu
                 </Button>
@@ -118,7 +157,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockGuests.map((guest) => (
+                {mockGuests.slice(0, 5).map((guest) => (
                   <div key={guest.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center gap-4">
@@ -142,10 +181,10 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => handleViewGuest(guest)}>
                         <EyeIcon className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => handleEditGuest(guest)}>
                         <PencilIcon className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="outline">
@@ -175,7 +214,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockInvitations.map((invitation) => {
+                {mockInvitations.slice(0, 5).map((invitation) => {
                   const guest = mockGuests.find(g => g.id === invitation.guest_id);
                   return (
                     <div key={invitation.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -280,7 +319,7 @@ const Dashboard = () => {
               <div className="space-y-6">
                 <div>
                   <h3 className="font-semibold mb-4">Tema & Desain</h3>
-                  <Button variant="premium" className="w-full">
+                  <Button variant="premium" className="w-full" onClick={() => navigate('/admin/theme')}>
                     <PencilIcon className="h-4 w-4 mr-2" />
                     Buka Theme Editor
                   </Button>
@@ -288,7 +327,7 @@ const Dashboard = () => {
                 <div>
                   <h3 className="font-semibold mb-4">Konfigurasi Email</h3>
                   <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/admin/email')}>
                       <EnvelopeIcon className="h-4 w-4 mr-2" />
                       Template Email
                     </Button>
@@ -300,7 +339,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-4">Peta & Lokasi</h3>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/admin/map')}>
                     <MapPinIcon className="h-4 w-4 mr-2" />
                     Konfigurasi Mapbox
                   </Button>

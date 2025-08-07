@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useDataSync } from '@/hooks/useDataSync';
 import { useTheme } from '@/context/ThemeContext';
 import { 
   HomeIcon,
@@ -19,7 +19,8 @@ import {
   UserIcon,
   ArrowRightOnRectangleIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +30,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const { user, isLoading, logout } = useAdminAuth();
   const { currentTheme } = useTheme();
+  const { lastSync, isSyncing, syncData } = useDataSync();
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
@@ -170,14 +172,33 @@ const AdminLayout = () => {
                 <h1 className="text-xl font-bold text-gradient">
                   Dhika & Sari Wedding Admin
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Professional Wedding Management System
-                </p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Professional Wedding Management System</span>
+                  {lastSync && (
+                    <span className="text-xs">
+                      • Last sync: {lastSync.toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             
             {/* Header Actions */}
             <div className="flex items-center gap-4">
+              {/* Data Sync Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={syncData}
+                disabled={isSyncing}
+                className="hover-glow"
+              >
+                <ArrowPathIcon className={cn(
+                  "h-4 w-4",
+                  isSyncing && "animate-spin"
+                )} />
+              </Button>
+
               <ThemeToggle />
               
               {/* User Menu */}
