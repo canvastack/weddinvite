@@ -40,6 +40,8 @@ export const verifyPassword = async (password: string, hash: string): Promise<bo
 // Login function
 export const login = async (email: string, password: string) => {
   try {
+    console.log('Login attempt for:', email);
+    
     // Get user by email
     const { data: user, error: userError } = await supabase
       .from('app_users')
@@ -48,13 +50,21 @@ export const login = async (email: string, password: string) => {
       .eq('is_active', true)
       .single();
 
+    console.log('Database query result:', { user, userError });
+
     if (userError || !user) {
+      console.log('User not found or database error:', userError);
       throw new Error('Invalid email or password');
     }
 
+    console.log('User found:', user.email, 'Hash length:', user.password_hash?.length);
+    
     // Verify password
     const isValidPassword = await verifyPassword(password, user.password_hash);
+    console.log('Password verification result:', isValidPassword);
+    
     if (!isValidPassword) {
+      console.log('Password verification failed');
       throw new Error('Invalid email or password');
     }
 
