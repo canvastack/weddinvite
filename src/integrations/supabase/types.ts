@@ -123,6 +123,63 @@ export type Database = {
           },
         ]
       }
+      wedding_hero_settings: {
+        Row: {
+          bride_name: string
+          ceremony_venue_address: string
+          ceremony_venue_name: string
+          countdown_enabled: boolean | null
+          created_at: string | null
+          groom_name: string
+          hero_background_image: string | null
+          hero_description: string | null
+          hero_subtitle: string | null
+          id: string
+          is_active: boolean | null
+          reception_venue_address: string | null
+          reception_venue_name: string | null
+          updated_at: string | null
+          wedding_date: string
+          wedding_time: string
+        }
+        Insert: {
+          bride_name: string
+          ceremony_venue_address: string
+          ceremony_venue_name: string
+          countdown_enabled?: boolean | null
+          created_at?: string | null
+          groom_name: string
+          hero_background_image?: string | null
+          hero_description?: string | null
+          hero_subtitle?: string | null
+          id?: string
+          is_active?: boolean | null
+          reception_venue_address?: string | null
+          reception_venue_name?: string | null
+          updated_at?: string | null
+          wedding_date: string
+          wedding_time: string
+        }
+        Update: {
+          bride_name?: string
+          ceremony_venue_address?: string
+          ceremony_venue_name?: string
+          countdown_enabled?: boolean | null
+          created_at?: string | null
+          groom_name?: string
+          hero_background_image?: string | null
+          hero_description?: string | null
+          hero_subtitle?: string | null
+          id?: string
+          is_active?: boolean | null
+          reception_venue_address?: string | null
+          reception_venue_name?: string | null
+          updated_at?: string | null
+          wedding_date?: string
+          wedding_time?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
