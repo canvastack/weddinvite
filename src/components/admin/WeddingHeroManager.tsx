@@ -1,17 +1,17 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useWeddingHero } from '@/hooks/useWeddingHero';
+import { useWeddingHero, WeddingHeroSettings } from '@/hooks/useWeddingHero';
 import { Loader2, Save, Eye, EyeOff } from 'lucide-react';
 
 export const WeddingHeroManager = () => {
   const { settings, isLoading, updateSettings } = useWeddingHero();
-  const [formData, setFormData] = useState(settings || {});
+  const [formData, setFormData] = useState<Partial<WeddingHeroSettings>>(settings || {});
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Update form data when settings load
@@ -21,7 +21,7 @@ export const WeddingHeroManager = () => {
     }
   }, [settings]);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: keyof WeddingHeroSettings, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
