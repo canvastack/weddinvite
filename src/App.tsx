@@ -20,6 +20,7 @@ import UserManagement from '@/components/admin/UserManagement';
 import Settings from '@/pages/admin/Settings';
 import Login from '@/pages/admin/Login';
 import EditProfile from '@/pages/admin/EditProfile';
+import { WeddingHeroManager } from '@/components/admin/WeddingHeroManager';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
             <Route path="email" element={<EmailBlastManager />} />
             <Route path="map" element={<MapManager />} />
             <Route path="events" element={<EventManagement />} />
+            <Route path="hero" element={<WeddingHeroManager />} />
             <Route path="theme" element={<ThemeManager />} />
             <Route path="theme-editor" element={<ThemeEditor />} />
             <Route path="analytics" element={<Analytics />} />

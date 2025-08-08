@@ -38,6 +38,7 @@ const AdminLayout = () => {
     { name: 'Email Blast', href: '/admin/email', icon: EnvelopeIcon },
     { name: 'Peta & Lokasi', href: '/admin/map', icon: MapPinIcon },
     { name: 'Acara', href: '/admin/events', icon: CalendarIcon },
+    { name: 'Hero Section', href: '/admin/hero', icon: PaintBrushIcon },
     { name: 'Theme Editor', href: '/admin/theme', icon: PaintBrushIcon },
     { name: 'Analytics', href: '/admin/analytics', icon: ChartBarIcon },
     { name: 'User Management', href: '/admin/users', icon: UsersIcon },
