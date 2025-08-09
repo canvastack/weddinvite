@@ -10,7 +10,7 @@ import NotFound from '@/pages/NotFound';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import GuestManagement from '@/pages/admin/GuestManagement';
-import EmailBlastManager from '@/components/admin/EmailBlastManager';
+import { EmailBlastManager } from '@/components/admin/EmailBlastManager';
 import MapManager from '@/components/admin/MapManager';
 import EventManagement from '@/pages/admin/EventManagement';
 import ThemeEditor from '@/pages/admin/ThemeEditor';
