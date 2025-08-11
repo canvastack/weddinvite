@@ -99,8 +99,10 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
             <div>
               <p 
                 className="font-semibold text-sm"
+                style={{ 
+                  color: `hsl(${colors.text})`,
                   fontWeight: theme.typography.fontWeight.medium
-                style={{ color: `hsl(${colors.text})` }}
+                }}
               >
                 Tanggal Pernikahan
               </p>
@@ -151,8 +153,10 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
             <div>
               <p 
                 className="font-semibold text-sm"
+                style={{ 
+                  color: `hsl(${colors.text})`,
                   fontWeight: theme.typography.fontWeight.medium
-                style={{ color: `hsl(${colors.text})` }}
+                }}
               >
                 Lokasi Acara
               </p>
