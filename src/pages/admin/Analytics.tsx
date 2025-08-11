@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,7 +169,7 @@ const Analytics = () => {
           <CardContent>
             <div className="text-2xl font-bold">{guestStats.total}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
+              <ArrowTrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
               +{guestGrowth}% from last week
             </div>
           </CardContent>
@@ -195,7 +196,7 @@ const Analytics = () => {
           <CardContent>
             <div className="text-2xl font-bold">{responseRate}%</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
+              <ArrowTrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
               +{responseGrowth}% improvement
             </div>
           </CardContent>
