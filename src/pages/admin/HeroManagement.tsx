@@ -1,6 +1,6 @@
 
 import React from 'react';
-import WeddingHeroManager from '@/components/admin/WeddingHeroManager';
+import { WeddingHeroManager } from '@/components/admin/WeddingHeroManager';
 
 const HeroManagement = () => {
   return (

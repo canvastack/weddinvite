@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,8 +13,8 @@ import {
   CalendarIcon,
   ClockIcon,
   ArrowPathIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
 import { RefreshCw, Users, Calendar, Mail, MapPin } from 'lucide-react';
 
