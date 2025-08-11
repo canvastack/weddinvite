@@ -275,7 +275,11 @@ const MapManager = () => {
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>📍 {location.address}</p>
                       {location.description && <p>📝 {location.description}</p>}
-                      <p>🌍 {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</p>
+                      <p>🌍 {
+                        location.latitude && location.longitude 
+                          ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`
+                          : 'Koordinat tidak tersedia'
+                      }</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -284,6 +288,7 @@ const MapManager = () => {
                       size="sm"
                       onClick={() => openInGoogleMaps(location)}
                       title="Buka di Google Maps"
+                      disabled={!location.latitude || !location.longitude}
                     >
                       <MapPinIcon className="h-4 w-4" />
                     </Button>
