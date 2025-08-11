@@ -40,6 +40,7 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
             position.coords.latitude,
             position.coords.longitude
           ];
+          console.log('Got user location:', userLocation);
           setCurrentPosition(userLocation);
           setSelectedPosition(userLocation);
           
@@ -53,21 +54,23 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         },
         (error) => {
           console.error('Error getting location:', error);
-          // Fallback to Jakarta coordinates
+          // Fallback to accurate Jakarta coordinates
           const fallbackLocation: [number, number] = [-6.2088, 106.8456];
+          console.log('Using fallback location:', fallbackLocation);
           setCurrentPosition(fallbackLocation);
           setSelectedPosition(fallbackLocation);
           setIsGettingLocation(false);
         },
         {
           enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
+          timeout: 10000,
+          maximumAge: 60000
         }
       );
     } else {
-      // Fallback to Jakarta coordinates
+      // Fallback to accurate Jakarta coordinates
       const fallbackLocation: [number, number] = [-6.2088, 106.8456];
+      console.log('Geolocation not supported, using fallback:', fallbackLocation);
       setCurrentPosition(fallbackLocation);
       setSelectedPosition(fallbackLocation);
       setIsGettingLocation(false);

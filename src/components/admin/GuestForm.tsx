@@ -40,20 +40,23 @@ const GuestForm = ({ guest, isOpen, onClose, onSubmit }: GuestFormProps) => {
   const handleLocationSelect = async (lat: number, lng: number) => {
     setIsLoadingLocation(true);
     try {
+      console.log('Guest location selected:', lat, lng);
       const geocodeResult = await reverseGeocode(lat, lng);
       
       if (geocodeResult) {
+        console.log('Geocoding result:', geocodeResult);
         setFormData(prev => ({
           ...prev,
-          address: geocodeResult.address,
-          city: geocodeResult.city,
-          province: geocodeResult.province,
-          postal_code: geocodeResult.postalCode,
+          address: geocodeResult.address || prev.address,
+          city: geocodeResult.city || prev.city,
+          province: geocodeResult.province || prev.province,
+          postal_code: geocodeResult.postalCode || prev.postal_code,
           latitude: lat,
           longitude: lng
         }));
       } else {
         // Fallback if geocoding fails
+        console.log('Geocoding failed, using coordinates only');
         setFormData(prev => ({
           ...prev,
           latitude: lat,

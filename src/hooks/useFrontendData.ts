@@ -104,28 +104,28 @@ export const useFrontendData = () => {
 
   // Sync with settings changes
   useEffect(() => {
-    if (settings.wedding.brideName !== frontendData.coupleSection.brideName ||
-        settings.wedding.groomName !== frontendData.coupleSection.groomName) {
+    if (settings?.wedding?.brideName !== frontendData.coupleSection.brideName ||
+        settings?.wedding?.groomName !== frontendData.coupleSection.groomName) {
       setFrontendData(prev => ({
         ...prev,
         coupleSection: {
           ...prev.coupleSection,
-          brideName: settings.wedding.brideName,
-          groomName: settings.wedding.groomName,
+          brideName: settings?.wedding?.brideName || prev.coupleSection.brideName,
+          groomName: settings?.wedding?.groomName || prev.coupleSection.groomName,
         },
         heroSection: {
           ...prev.heroSection,
-          title: `${settings.wedding.brideName} & ${settings.wedding.groomName}`,
+          title: `${settings?.wedding?.brideName || 'Bride'} & ${settings?.wedding?.groomName || 'Groom'}`,
         },
       }));
     }
 
-    if (settings.wedding.rsvpDeadline !== frontendData.rsvpSection.deadline) {
+    if (settings?.wedding?.rsvpDeadline !== frontendData.rsvpSection.deadline) {
       setFrontendData(prev => ({
         ...prev,
         rsvpSection: {
           ...prev.rsvpSection,
-          deadline: settings.wedding.rsvpDeadline,
+          deadline: settings?.wedding?.rsvpDeadline || prev.rsvpSection.deadline,
         },
       }));
     }

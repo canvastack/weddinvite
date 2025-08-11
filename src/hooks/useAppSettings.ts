@@ -105,14 +105,21 @@ export const useAppSettings = () => {
     setIsSaving(true);
     
     try {
+      console.log('Saving settings:', settings);
+      
       // Apply theme changes
       if (settings.appearance.theme) {
         document.documentElement.setAttribute('data-theme', settings.appearance.theme);
+        console.log('Applied theme:', settings.appearance.theme);
       }
       
       // Apply primary color
       if (settings.appearance.primaryColor) {
-        document.documentElement.style.setProperty('--primary', settings.appearance.primaryColor);
+        // Convert hex to HSL for CSS variables
+        const hex = settings.appearance.primaryColor;
+        const hsl = hexToHsl(hex);
+        document.documentElement.style.setProperty('--primary', hsl);
+        console.log('Applied primary color:', hex, 'as HSL:', hsl);
       }
       
       // Apply custom CSS
@@ -130,8 +137,10 @@ export const useAppSettings = () => {
       // Apply maintenance mode
       if (settings.general.maintenanceMode) {
         localStorage.setItem('maintenance-mode', 'true');
+        console.log('Maintenance mode enabled');
       } else {
         localStorage.removeItem('maintenance-mode');
+        console.log('Maintenance mode disabled');
       }
       
       // Simulate API call delay
@@ -152,6 +161,32 @@ export const useAppSettings = () => {
       setIsSaving(false);
     }
   }, [settings, toast]);
+
+  // Helper function to convert hex to HSL
+  const hexToHsl = (hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+    const sum = max + min;
+    
+    let h = 0;
+    if (diff !== 0) {
+      if (max === r) h = ((g - b) / diff) % 6;
+      else if (max === g) h = (b - r) / diff + 2;
+      else h = (r - g) / diff + 4;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+    
+    const l = Math.round((sum / 2) * 100);
+    const s = diff === 0 ? 0 : Math.round((diff / (1 - Math.abs(2 * l / 100 - 1))) * 100);
+    
+    return `${h} ${s}% ${l}%`;
+  };
 
   const resetSettings = useCallback(() => {
     setSettings(defaultSettings);

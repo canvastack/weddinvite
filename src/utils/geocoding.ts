@@ -9,9 +9,17 @@ export interface GeocodingResult {
 
 export const reverseGeocode = async (lat: number, lng: number): Promise<GeocodingResult | null> => {
   try {
+    // Add delay to prevent rate limiting
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Menggunakan Nominatim API untuk reverse geocoding
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=id`,
+      {
+        headers: {
+          'User-Agent': 'Wedding-App/1.0'
+        }
+      }
     );
     
     if (!response.ok) {
@@ -28,11 +36,11 @@ export const reverseGeocode = async (lat: number, lng: number): Promise<Geocodin
     
     // Extract address components
     const name = data.display_name?.split(',')[0] || 'Lokasi Terpilih';
-    const fullAddress = data.display_name || `${lat}, ${lng}`;
+    const fullAddress = data.display_name || `Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
     
     // Try to extract city and province from address components
-    const city = address.city || address.town || address.village || address.suburb || '';
-    const province = address.state || address.province || '';
+    const city = address.city || address.town || address.village || address.suburb || address.county || 'Jakarta';
+    const province = address.state || address.province || address.region || 'DKI Jakarta';
     const postalCode = address.postcode || '';
     
     return {
