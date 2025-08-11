@@ -1,58 +1,49 @@
 
-// Simple reverse geocoding using Nominatim (OpenStreetMap's geocoding service)
-export const reverseGeocode = async (lat: number, lng: number): Promise<{
+export interface GeocodingResult {
   name: string;
   address: string;
-} | null> => {
+  city: string;
+  province: string;
+  postalCode: string;
+}
+
+export const reverseGeocode = async (lat: number, lng: number): Promise<GeocodingResult | null> => {
   try {
+    // Menggunakan Nominatim API untuk reverse geocoding
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=id,en`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
     );
     
     if (!response.ok) {
-      throw new Error('Geocoding failed');
+      throw new Error('Geocoding request failed');
     }
     
     const data = await response.json();
     
-    if (data && data.address) {
-      const address = data.address;
-      
-      // Extract meaningful name (priority: amenity, building, house_number + road, road, suburb)
-      const name = address.amenity || 
-                  address.building || 
-                  (address.house_number && address.road ? `${address.house_number} ${address.road}` : address.road) ||
-                  address.suburb ||
-                  address.village ||
-                  address.city ||
-                  'Lokasi Terpilih';
-      
-      // Build full address
-      const addressParts = [];
-      if (address.house_number && address.road) {
-        addressParts.push(`${address.house_number} ${address.road}`);
-      } else if (address.road) {
-        addressParts.push(address.road);
-      }
-      
-      if (address.suburb) addressParts.push(address.suburb);
-      if (address.city || address.town || address.village) {
-        addressParts.push(address.city || address.town || address.village);
-      }
-      if (address.state) addressParts.push(address.state);
-      if (address.country) addressParts.push(address.country);
-      
-      const fullAddress = addressParts.join(', ') || data.display_name || 'Alamat tidak ditemukan';
-      
-      return {
-        name: name,
-        address: fullAddress
-      };
+    if (!data || !data.address) {
+      return null;
     }
     
-    return null;
+    const address = data.address;
+    
+    // Extract address components
+    const name = data.display_name?.split(',')[0] || 'Lokasi Terpilih';
+    const fullAddress = data.display_name || `${lat}, ${lng}`;
+    
+    // Try to extract city and province from address components
+    const city = address.city || address.town || address.village || address.suburb || '';
+    const province = address.state || address.province || '';
+    const postalCode = address.postcode || '';
+    
+    return {
+      name: name.trim(),
+      address: fullAddress,
+      city: city,
+      province: province,
+      postalCode: postalCode
+    };
   } catch (error) {
-    console.error('Reverse geocoding error:', error);
+    console.error('Geocoding error:', error);
     return null;
   }
 };

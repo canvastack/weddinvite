@@ -1,343 +1,388 @@
 
-import { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
   CogIcon, 
+  UserIcon, 
+  BellIcon, 
   ShieldCheckIcon,
-  BellIcon,
-  EnvelopeIcon,
-  GlobeAltIcon,
-  KeyIcon,
-  CircleStackIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon
+  PaintBrushIcon,
+  CheckIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline';
-import { useToast } from '@/hooks/use-toast';
-import { useSettings } from '@/hooks/useSettings';
-import { mockBackups } from '@/data/mockBackups';
-import { timezones } from '@/data/mockTimezones';
+import { Save, AlertCircle, TestTube } from 'lucide-react';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const Settings = () => {
   const { 
     settings, 
     isLoading, 
     isSaving, 
-    isTestingEmail, 
-    isExporting, 
-    isBackingUp,
-    loadSettings,
-    saveSettings,
-    testEmailConfiguration,
-    exportData,
-    createBackup,
-    updateSetting
-  } = useSettings();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
-
-  const handleSettingChange = (key: string, value: any) => {
-    updateSetting(key as any, value);
-  };
-
-  const handleSaveSettings = async () => {
-    if (!settings) return;
-    
-    try {
-      await saveSettings(settings);
-    } catch (error) {
-      // Error handling is already done in the hook
-    }
-  };
+    hasChanges, 
+    updateSetting, 
+    saveSettings, 
+    resetSettings,
+    testEmailConfiguration 
+  } = useAppSettings();
+  const [activeTab, setActiveTab] = useState('general');
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
 
   const handleTestEmail = async () => {
+    setIsTestingEmail(true);
     try {
       await testEmailConfiguration();
-    } catch (error) {
-      // Error handling is already done in the hook
+    } finally {
+      setIsTestingEmail(false);
     }
   };
-
-  const handleExportData = async () => {
-    try {
-      await exportData();
-    } catch (error) {
-      // Error handling is already done in the hook
-    }
-  };
-
-  const handleBackupNow = async () => {
-    try {
-      await createBackup();
-    } catch (error) {
-      // Error handling is already done in the hook
-    }
-  };
-
-  if (isLoading || !settings) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gradient">Pengaturan</h1>
-          <p className="text-muted-foreground">Konfigurasi sistem dan pengaturan aplikasi</p>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground">Kelola pengaturan aplikasi dan preferensi sistem</p>
         </div>
-        <Button 
-          variant="premium" 
-          onClick={handleSaveSettings}
-          disabled={isSaving}
-        >
-          {isSaving ? 'Menyimpan...' : 'Simpan Semua Pengaturan'}
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              Ada perubahan belum disimpan
+            </Badge>
+          )}
+          <Button 
+            variant="outline" 
+            onClick={resetSettings}
+            disabled={isSaving}
+          >
+            Reset ke Default
+          </Button>
+          <Button 
+            onClick={saveSettings}
+            disabled={!hasChanges || isSaving}
+          >
+            {isSaving ? (
+              <Save className="h-4 w-4 mr-2 animate-pulse" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="general">Umum</TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="notifications">Notifikasi</TabsTrigger>
-          <TabsTrigger value="security">Keamanan</TabsTrigger>
-          <TabsTrigger value="api">API</TabsTrigger>
-          <TabsTrigger value="backup">Backup</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="general" className="flex items-center gap-2">
+            <CogIcon className="h-4 w-4" />
+            Umum
+          </TabsTrigger>
+          <TabsTrigger value="wedding" className="flex items-center gap-2">
+            <UserIcon className="h-4 w-4" />
+            Pernikahan
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <BellIcon className="h-4 w-4" />
+            Notifikasi
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <ShieldCheckIcon className="h-4 w-4" />
+            Keamanan
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="flex items-center gap-2">
+            <PaintBrushIcon className="h-4 w-4" />
+            Tampilan
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
-          <Card className="elegant-card">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <GlobeAltIcon className="h-5 w-5" />
-                Pengaturan Umum
-              </CardTitle>
-              <CardDescription>
-                Konfigurasi dasar website dan aplikasi
-              </CardDescription>
+              <CardTitle>Pengaturan Umum</CardTitle>
+              <CardDescription>Konfigurasi dasar aplikasi</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="site_name">Nama Website</Label>
+                  <Label htmlFor="siteName">Nama Situs</Label>
                   <Input
-                    id="site_name"
-                    value={settings.site_name}
-                    onChange={(e) => handleSettingChange('site_name', e.target.value)}
-                    placeholder="Nama website"
+                    id="siteName"
+                    value={settings.general.siteName}
+                    onChange={(e) => updateSetting('general', 'siteName', e.target.value)}
+                    placeholder="Masukkan nama situs"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="site_url">URL Website</Label>
+                  <Label htmlFor="contactEmail">Email Kontak</Label>
                   <Input
-                    id="site_url"
-                    value={settings.site_url}
-                    onChange={(e) => handleSettingChange('site_url', e.target.value)}
-                    placeholder="https://example.com"
+                    id="contactEmail"
+                    type="email"
+                    value={settings.general.contactEmail}
+                    onChange={(e) => updateSetting('general', 'contactEmail', e.target.value)}
+                    placeholder="admin@example.com"
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="site_description">Deskripsi Website</Label>
+                <Label htmlFor="siteDescription">Deskripsi Situs</Label>
                 <Textarea
-                  id="site_description"
-                  value={settings.site_description}
-                  onChange={(e) => handleSettingChange('site_description', e.target.value)}
-                  placeholder="Deskripsi website untuk SEO"
+                  id="siteDescription"
+                  value={settings.general.siteDescription}
+                  onChange={(e) => updateSetting('general', 'siteDescription', e.target.value)}
+                  placeholder="Deskripsi singkat website Anda"
+                  rows={3}
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label>Timezone</Label>
-                <Select 
-                  value={settings.timezone} 
-                  onValueChange={(value) => handleSettingChange('timezone', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {timezones.map((tz) => (
-                      <SelectItem key={tz.value} value={tz.value}>
-                        {tz.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="timezone">Zona Waktu</Label>
+                  <Select 
+                    value={settings.general.timezone} 
+                    onValueChange={(value) => updateSetting('general', 'timezone', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Asia/Jakarta">Asia/Jakarta (WIB)</SelectItem>
+                      <SelectItem value="Asia/Makassar">Asia/Makassar (WITA)</SelectItem>
+                      <SelectItem value="Asia/Jayapura">Asia/Jayapura (WIT)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="language">Bahasa</Label>
+                  <Select 
+                    value={settings.general.language} 
+                    onValueChange={(value) => updateSetting('general', 'language', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="id">Bahasa Indonesia</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label>Mode Maintenance</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Aktifkan mode maintenance untuk menonaktifkan situs sementara
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.general.maintenanceMode}
+                  onCheckedChange={(checked) => updateSetting('general', 'maintenanceMode', checked)}
+                />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="email" className="space-y-4">
-          <Card className="elegant-card">
+        <TabsContent value="wedding" className="space-y-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <EnvelopeIcon className="h-5 w-5" />
-                Pengaturan Email
-              </CardTitle>
-              <CardDescription>
-                Konfigurasi SMTP dan pengaturan email
-              </CardDescription>
+              <CardTitle>Pengaturan Pernikahan</CardTitle>
+              <CardDescription>Konfigurasi informasi pernikahan</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="smtp_host">SMTP Host</Label>
+                  <Label htmlFor="brideName">Nama Pengantin Wanita</Label>
                   <Input
-                    id="smtp_host"
-                    value={settings.smtp_host}
-                    onChange={(e) => handleSettingChange('smtp_host', e.target.value)}
-                    placeholder="smtp.gmail.com"
+                    id="brideName"
+                    value={settings.wedding.brideName}
+                    onChange={(e) => updateSetting('wedding', 'brideName', e.target.value)}
+                    placeholder="Nama pengantin wanita"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="smtp_port">SMTP Port</Label>
+                  <Label htmlFor="groomName">Nama Pengantin Pria</Label>
                   <Input
-                    id="smtp_port"
-                    value={settings.smtp_port}
-                    onChange={(e) => handleSettingChange('smtp_port', e.target.value)}
-                    placeholder="587"
+                    id="groomName"
+                    value={settings.wedding.groomName}
+                    onChange={(e) => updateSetting('wedding', 'groomName', e.target.value)}
+                    placeholder="Nama pengantin pria"
                   />
                 </div>
               </div>
-              
+
+              <div className="space-y-2">
+                <Label htmlFor="coupleNames">Nama Pasangan (Tampilan)</Label>
+                <Input
+                  id="coupleNames"
+                  value={settings.wedding.coupleNames}
+                  onChange={(e) => updateSetting('wedding', 'coupleNames', e.target.value)}
+                  placeholder="Bride & Groom"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="smtp_username">SMTP Username</Label>
+                  <Label htmlFor="weddingDate">Tanggal Pernikahan</Label>
                   <Input
-                    id="smtp_username"
-                    value={settings.smtp_username}
-                    onChange={(e) => handleSettingChange('smtp_username', e.target.value)}
-                    placeholder="your-email@gmail.com"
+                    id="weddingDate"
+                    type="date"
+                    value={settings.wedding.weddingDate}
+                    onChange={(e) => updateSetting('wedding', 'weddingDate', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="smtp_password">SMTP Password</Label>
+                  <Label htmlFor="rsvpDeadline">Batas Waktu RSVP</Label>
                   <Input
-                    id="smtp_password"
-                    type="password"
-                    value={settings.smtp_password}
-                    onChange={(e) => handleSettingChange('smtp_password', e.target.value)}
-                    placeholder="App password"
+                    id="rsvpDeadline"
+                    type="date"
+                    value={settings.wedding.rsvpDeadline}
+                    onChange={(e) => updateSetting('wedding', 'rsvpDeadline', e.target.value)}
                   />
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email_from_name">From Name</Label>
-                  <Input
-                    id="email_from_name"
-                    value={settings.email_from_name}
-                    onChange={(e) => handleSettingChange('email_from_name', e.target.value)}
-                    placeholder="Wedding Invitation"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email_from_address">From Address</Label>
-                  <Input
-                    id="email_from_address"
-                    value={settings.email_from_address}
-                    onChange={(e) => handleSettingChange('email_from_address', e.target.value)}
-                    placeholder="noreply@example.com"
-                  />
-                </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="venue">Venue Pernikahan</Label>
+                <Input
+                  id="venue"
+                  value={settings.wedding.venue}
+                  onChange={(e) => updateSetting('wedding', 'venue', e.target.value)}
+                  placeholder="Nama venue pernikahan"
+                />
               </div>
-              
-              <div className="pt-4">
-                <Button 
-                  onClick={handleTestEmail} 
-                  variant="outline"
-                  disabled={isTestingEmail}
-                >
-                  {isTestingEmail ? 'Testing...' : 'Test Email Configuration'}
-                </Button>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxGuests">Maksimal Tamu per Undangan</Label>
+                <Input
+                  id="maxGuests"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={settings.wedding.maxGuestsPerInvite}
+                  onChange={(e) => updateSetting('wedding', 'maxGuestsPerInvite', parseInt(e.target.value))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label>Izinkan Plus One</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Izinkan tamu membawa pendamping tambahan
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.wedding.allowPlusOnes}
+                  onCheckedChange={(checked) => updateSetting('wedding', 'allowPlusOnes', checked)}
+                />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
-          <Card className="elegant-card">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BellIcon className="h-5 w-5" />
-                Pengaturan Notifikasi
-              </CardTitle>
-              <CardDescription>
-                Atur notifikasi yang akan diterima
-              </CardDescription>
+              <CardTitle>Pengaturan Notifikasi</CardTitle>
+              <CardDescription>Konfigurasi email dan preferensi peringatan</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
+                    <Label>Notifikasi Email</Label>
                     <p className="text-sm text-muted-foreground">
-                      Terima notifikasi melalui email
+                      Terima notifikasi email umum
                     </p>
                   </div>
                   <Switch
-                    checked={settings.email_notifications}
-                    onCheckedChange={(checked) => handleSettingChange('email_notifications', checked)}
+                    checked={settings.notifications.emailNotifications}
+                    onCheckedChange={(checked) => updateSetting('notifications', 'emailNotifications', checked)}
                   />
                 </div>
-                
-                <div className="flex items-center justify-between">
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>RSVP Notifications</Label>
+                    <Label>Notifikasi RSVP</Label>
                     <p className="text-sm text-muted-foreground">
-                      Notifikasi saat ada response RSVP baru
+                      Dapatkan notifikasi ketika tamu melakukan RSVP
                     </p>
                   </div>
                   <Switch
-                    checked={settings.rsvp_notifications}
-                    onCheckedChange={(checked) => handleSettingChange('rsvp_notifications', checked)}
+                    checked={settings.notifications.rsvpNotifications}
+                    onCheckedChange={(checked) => updateSetting('notifications', 'rsvpNotifications', checked)}
                   />
                 </div>
-                
-                <div className="flex items-center justify-between">
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Guest Notifications</Label>
+                    <Label>Email Pengingat</Label>
                     <p className="text-sm text-muted-foreground">
-                      Notifikasi aktivitas tamu
+                      Kirim email pengingat kepada tamu
                     </p>
                   </div>
                   <Switch
-                    checked={settings.guest_notifications}
-                    onCheckedChange={(checked) => handleSettingChange('guest_notifications', checked)}
+                    checked={settings.notifications.reminderEmails}
+                    onCheckedChange={(checked) => updateSetting('notifications', 'reminderEmails', checked)}
                   />
                 </div>
-                
-                <div className="flex items-center justify-between">
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-0.5">
-                    <Label>Auto Reminder</Label>
+                    <Label>Peringatan Admin</Label>
                     <p className="text-sm text-muted-foreground">
-                      Kirim reminder otomatis ke tamu
+                      Terima peringatan sistem dan notifikasi penting
                     </p>
                   </div>
                   <Switch
-                    checked={settings.auto_reminder}
-                    onCheckedChange={(checked) => handleSettingChange('auto_reminder', checked)}
+                    checked={settings.notifications.adminAlerts}
+                    onCheckedChange={(checked) => updateSetting('notifications', 'adminAlerts', checked)}
                   />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emailTemplate">Template Email</Label>
+                  <Select 
+                    value={settings.notifications.emailTemplate} 
+                    onValueChange={(value) => updateSetting('notifications', 'emailTemplate', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Template Default</SelectItem>
+                      <SelectItem value="elegant">Template Elegan</SelectItem>
+                      <SelectItem value="minimal">Template Minimal</SelectItem>
+                      <SelectItem value="modern">Template Modern</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-start">
+                  <Button
+                    variant="outline"
+                    onClick={handleTestEmail}
+                    disabled={isTestingEmail || !settings.notifications.emailNotifications}
+                  >
+                    {isTestingEmail ? (
+                      <TestTube className="h-4 w-4 mr-2 animate-pulse" />
+                    ) : (
+                      <EnvelopeIcon className="h-4 w-4 mr-2" />
+                    )}
+                    {isTestingEmail ? 'Menguji...' : 'Test Email'}
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -345,105 +390,59 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
-          <Card className="elegant-card">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheckIcon className="h-5 w-5" />
-                Pengaturan Keamanan
-              </CardTitle>
-              <CardDescription>
-                Konfigurasi keamanan dan autentikasi
-              </CardDescription>
+              <CardTitle>Pengaturan Keamanan</CardTitle>
+              <CardDescription>Konfigurasi keamanan dan opsi autentikasi</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-0.5">
-                  <Label>Two-Factor Authentication</Label>
+                  <Label>Wajib Verifikasi Email</Label>
                   <p className="text-sm text-muted-foreground">
-                    Aktifkan 2FA untuk keamanan ekstra
+                    Pengguna harus memverifikasi alamat email mereka
                   </p>
                 </div>
                 <Switch
-                  checked={settings.two_factor_auth}
-                  onCheckedChange={(checked) => handleSettingChange('two_factor_auth', checked)}
+                  checked={settings.security.requireEmailVerification}
+                  onCheckedChange={(checked) => updateSetting('security', 'requireEmailVerification', checked)}
                 />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password_expiry">Password Expiry (hari)</Label>
-                  <Input
-                    id="password_expiry"
-                    type="number"
-                    value={settings.password_expiry}
-                    onChange={(e) => handleSettingChange('password_expiry', parseInt(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="max_login_attempts">Max Login Attempts</Label>
-                  <Input
-                    id="max_login_attempts"
-                    type="number"
-                    value={settings.max_login_attempts}
-                    onChange={(e) => handleSettingChange('max_login_attempts', parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="session_timeout">Session Timeout (menit)</Label>
-                <Input
-                  id="session_timeout"
-                  type="number"
-                  value={settings.session_timeout}
-                  onChange={(e) => handleSettingChange('session_timeout', parseInt(e.target.value))}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="api" className="space-y-4">
-          <Card className="elegant-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <KeyIcon className="h-5 w-5" />
-                Pengaturan API
-              </CardTitle>
-              <CardDescription>
-                Konfigurasi API keys dan integrasi eksternal
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="google_maps_api">Google Maps API Key</Label>
-                <Input
-                  id="google_maps_api"
-                  type="password"
-                  value={settings.google_maps_api}
-                  onChange={(e) => handleSettingChange('google_maps_api', e.target.value)}
-                  placeholder="AIzaSyD..."
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label>Izinkan Registrasi Tamu</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Izinkan tamu membuat akun sendiri
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.security.allowGuestRegistration}
+                  onCheckedChange={(checked) => updateSetting('security', 'allowGuestRegistration', checked)}
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="recaptcha_site_key">reCAPTCHA Site Key</Label>
+                  <Label htmlFor="sessionTimeout">Timeout Sesi (menit)</Label>
                   <Input
-                    id="recaptcha_site_key"
-                    value={settings.recaptcha_site_key}
-                    onChange={(e) => handleSettingChange('recaptcha_site_key', e.target.value)}
-                    placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                    id="sessionTimeout"
+                    type="number"
+                    min="5"
+                    max="1440"
+                    value={settings.security.sessionTimeout}
+                    onChange={(e) => updateSetting('security', 'sessionTimeout', parseInt(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="recaptcha_secret_key">reCAPTCHA Secret Key</Label>
+                  <Label htmlFor="maxLoginAttempts">Maksimal Percobaan Login</Label>
                   <Input
-                    id="recaptcha_secret_key"
-                    type="password"
-                    value={settings.recaptcha_secret_key}
-                    onChange={(e) => handleSettingChange('recaptcha_secret_key', e.target.value)}
-                    placeholder="6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+                    id="maxLoginAttempts"
+                    type="number"
+                    min="3"
+                    max="10"
+                    value={settings.security.maxLoginAttempts}
+                    onChange={(e) => updateSetting('security', 'maxLoginAttempts', parseInt(e.target.value))}
                   />
                 </div>
               </div>
@@ -451,112 +450,73 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="backup" className="space-y-4">
-          <Card className="elegant-card">
+        <TabsContent value="appearance" className="space-y-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CircleStackIcon className="h-5 w-5" />
-                Pengaturan Backup
-              </CardTitle>
-              <CardDescription>
-                Konfigurasi backup dan restore data
-              </CardDescription>
+              <CardTitle>Pengaturan Tampilan</CardTitle>
+              <CardDescription>Kustomisasi tampilan dan nuansa aplikasi</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Auto Backup</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Backup otomatis secara berkala
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.auto_backup}
-                  onCheckedChange={(checked) => handleSettingChange('auto_backup', checked)}
-                />
-              </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Backup Frequency</Label>
+                  <Label htmlFor="theme">Tema</Label>
                   <Select 
-                    value={settings.backup_frequency} 
-                    onValueChange={(value) => handleSettingChange('backup_frequency', value)}
+                    value={settings.appearance.theme} 
+                    onValueChange={(value) => updateSetting('appearance', 'theme', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Pilih frekuensi backup" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="elegant">Elegan</SelectItem>
+                      <SelectItem value="modern">Modern</SelectItem>
+                      <SelectItem value="classic">Klasik</SelectItem>
+                      <SelectItem value="minimal">Minimal</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="backup_retention">Backup Retention (hari)</Label>
-                  <Input
-                    id="backup_retention"
-                    type="number"
-                    value={settings.backup_retention}
-                    onChange={(e) => handleSettingChange('backup_retention', parseInt(e.target.value))}
-                  />
+                  <Label htmlFor="primaryColor">Warna Utama</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="primaryColor"
+                      type="color"
+                      value={settings.appearance.primaryColor}
+                      onChange={(e) => updateSetting('appearance', 'primaryColor', e.target.value)}
+                      className="w-20"
+                    />
+                    <Input
+                      value={settings.appearance.primaryColor}
+                      onChange={(e) => updateSetting('appearance', 'primaryColor', e.target.value)}
+                      placeholder="#6366f1"
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={handleBackupNow} 
-                  variant="outline"
-                  disabled={isBackingUp}
-                >
-                  {isBackingUp ? 'Creating Backup...' : 'Backup Sekarang'}
-                </Button>
-                <Button 
-                  onClick={handleExportData} 
-                  variant="outline"
-                  disabled={isExporting}
-                >
-                  {isExporting ? 'Exporting...' : 'Export Data'}
-                </Button>
               </div>
 
-              {/* Backup History */}
-              <div className="pt-6">
-                <h3 className="font-medium mb-4">Riwayat Backup</h3>
-                <div className="space-y-2">
-                  {mockBackups.map((backup) => (
-                    <div key={backup.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          {backup.status === 'completed' ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                          ) : backup.status === 'in_progress' ? (
-                            <ClockIcon className="h-5 w-5 text-yellow-500" />
-                          ) : (
-                            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{backup.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(backup.created_at).toLocaleDateString('id-ID')} - {backup.size}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={backup.type === 'auto' ? 'secondary' : 'outline'}>
-                          {backup.type}
-                        </Badge>
-                        {backup.status === 'completed' && (
-                          <Button size="sm" variant="ghost">
-                            Download
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="logoUrl">URL Logo</Label>
+                <Input
+                  id="logoUrl"
+                  value={settings.appearance.logoUrl}
+                  onChange={(e) => updateSetting('appearance', 'logoUrl', e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="customCSS">CSS Kustom</Label>
+                <Textarea
+                  id="customCSS"
+                  value={settings.appearance.customCSS}
+                  onChange={(e) => updateSetting('appearance', 'customCSS', e.target.value)}
+                  placeholder="/* Tambahkan CSS kustom Anda di sini */"
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  CSS kustom akan diterapkan secara global. Hati-hati dengan perubahan yang dapat merusak tampilan.
+                </p>
               </div>
             </CardContent>
           </Card>
