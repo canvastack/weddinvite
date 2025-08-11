@@ -1,260 +1,287 @@
 
-# Wedding Invitation Management System
+# 🎊 Wedding Invitation Admin System
 
-Sistem manajemen undangan pernikahan digital yang komprehensif dengan fitur modern dan antarmuka yang elegan.
+A comprehensive wedding invitation management system with admin panel, built with modern web technologies.
 
-## 🌟 Fitur Utama
+## 🌟 Features
 
-### 📱 Undangan Digital
-- **Desain Responsif**: Tampilan yang sempurna di semua perangkat
-- **Tema Kustom**: Sistem tema yang dapat disesuaikan dengan drag-and-drop
-- **Animasi Modern**: Efek visual yang menarik dan profesional
-- **Multi-bahasa**: Dukungan bahasa Indonesia
+### 🏠 **Public Wedding Website**
+- Beautiful, responsive wedding invitation website
+- Countdown timer to wedding day
+- Wedding details and venue information
+- RSVP functionality for guests
+- Photo gallery and couple story
+- Multiple theme support
 
-### 👥 Manajemen Tamu
-- **Database Tamu**: Kelola informasi tamu dengan lengkap
-- **Kategori Undangan**: Akad nikah, resepsi, atau keduanya
-- **Status Kehadiran**: Tracking konfirmasi kehadiran real-time
-- **Import/Export**: Fitur impor dan ekspor data tamu
+### 🔧 **Admin Panel**
+- **Dashboard**: Real-time analytics and insights
+- **User Management**: Create, edit, and manage system users
+- **Guest Management**: Complete RSVP and guest list management
+- **Event Management**: Organize ceremony and reception details with interactive maps
+- **Email Campaign**: Send bulk emails to guests with templates
+- **Location Management**: Interactive map integration for venue management
+- **Theme Editor**: Customize website appearance and branding
+- **Analytics**: Track visitor engagement and RSVP responses
+- **Settings**: Configure application preferences
 
-### 📧 Email Blast System
-- **Template Email**: Template yang dapat dikustomisasi
-- **Pengiriman Massal**: Kirim undangan ke banyak tamu sekaligus
-- **Tracking Email**: Monitor status pengiriman dan pembukaan email
-- **Reminder Otomatis**: Pengingat otomatis untuk tamu
-
-### 🗺️ Sistem Peta & Navigasi
-- **Integrasi Mapbox**: Peta interaktif untuk lokasi acara
-- **Estimasi Jarak**: Perhitungan jarak dari lokasi tamu ke venue
-- **Waktu Tempuh**: Estimasi waktu perjalanan untuk berbagai kendaraan:
-  - Sepeda motor
-  - Mobil
-  - Transportasi umum
-- **Navigasi GPS**: Link langsung ke aplikasi navigasi
-
-### 🎨 Admin Panel
-- **Dashboard Komprehensif**: Ringkasan statistik dan analytics
-- **Manajemen Tema**: Editor tema dengan drag-and-drop
-- **Pengelolaan Konten**: Edit konten undangan secara real-time
-- **Laporan & Analytics**: Laporan kehadiran dan statistik tamu
-
-## 🚀 Teknologi
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18** - Framework UI modern
-- **TypeScript** - Type safety dan developer experience
+- **React 18** - Modern UI library
+- **TypeScript** - Type safety and developer experience
 - **Tailwind CSS** - Utility-first CSS framework
-- **Shadcn/UI** - Komponen UI yang konsisten
-- **Vite** - Build tool yang cepat
-- **React Hook Form** - Form handling yang efisien
-- **React Query** - State management dan data fetching
+- **shadcn/ui** - High-quality UI components
+- **React Router** - Client-side routing
+- **React Query** - Data fetching and state management
+- **Leaflet** - Interactive maps
 
-### Backend (Supabase Ready)
-- **PostgreSQL** - Database relasional yang powerful
-- **Authentication** - Sistem auth yang aman
-- **Real-time** - Update data secara real-time
+### Backend & Database
+- **Supabase** - Backend-as-a-Service
+- **PostgreSQL** - Database
+- **Row Level Security (RLS)** - Data security
 - **Edge Functions** - Serverless functions
-- **Storage** - File dan media storage
 
-### Mapping & Navigation
-- **Mapbox GL JS** - Peta interaktif
-- **Geolocation API** - Deteksi lokasi otomatis
-- **Routing API** - Perhitungan rute optimal
+### Email Service
+- **Resend** - Email delivery service
 
-## 📋 Persyaratan Sistem
+## 🚀 Getting Started
 
-### Development
+### Prerequisites
 - Node.js 18+ 
-- npm atau yarn
-- Git
+- npm or yarn
+- Supabase account
+- Resend account (for email features)
 
-### Production
-- Supabase account (untuk backend)
-- Mapbox account (untuk fitur peta)
-- SMTP server (untuk email)
+### Installation
 
-## 🛠️ Instalasi
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd wedding-invitation-admin
+   ```
 
-### 1. Clone Repository
-```bash
-git clone <repository-url>
-cd wedding-invitation-system
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   Create a `.env.local` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Database Setup**
+   - Create a new Supabase project
+   - Run the SQL migrations found in `supabase/migrations/`
+   - Configure Row Level Security policies
+
+5. **Email Service Setup** (Optional)
+   - Sign up for Resend.com
+   - Add your domain and verify it
+   - Create an API key
+   - Add `RESEND_API_KEY` to your Supabase Edge Function secrets
+
+6. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+
+## 📁 Project Structure
+
 ```
-
-### 2. Install Dependencies
-```bash
-npm install
+wedding-invitation-admin/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── admin/          # Admin panel components
+│   │   └── ui/             # shadcn/ui components
+│   ├── hooks/              # Custom React hooks
+│   ├── pages/              # Page components
+│   │   └── admin/          # Admin panel pages
+│   ├── utils/              # Utility functions
+│   └── integrations/       # External service integrations
+│       └── supabase/       # Supabase configuration
+├── supabase/
+│   ├── migrations/         # Database migrations
+│   └── functions/          # Edge functions
+└── public/                 # Static assets
 ```
-
-### 3. Setup Environment Variables
-```bash
-cp .env.example .env
-```
-
-Edit file `.env` dengan konfigurasi:
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Mapbox Configuration
-VITE_MAPBOX_TOKEN=your_mapbox_token
-
-# Email Configuration
-VITE_EMAIL_FROM=noreply@yourdomain.com
-VITE_EMAIL_FROM_NAME=Your Wedding Name
-```
-
-### 4. Setup Database
-```bash
-# Import SQL schema ke database PostgreSQL
-psql -U username -d database_name -f database/schema.sql
-```
-
-### 5. Run Development Server
-```bash
-npm run dev
-```
-
-Aplikasi akan berjalan di `http://localhost:5173`
 
 ## 📊 Database Schema
 
-### Tabel Utama
-- `users` - Manajemen pengguna dan admin
-- `wedding_events` - Data acara pernikahan
-- `guests` - Database tamu undangan
-- `invitations` - Tracking undangan yang dikirim
-- `email_templates` - Template email
-- `themes` - Tema dan styling
-- `distance_calculations` - Cache perhitungan jarak
-- `email_logs` - Log pengiriman email
-- `settings` - Konfigurasi aplikasi
+### Core Tables
+- `app_users` - System users and authentication
+- `wedding_hero_settings` - Homepage configuration
+- `email_campaigns` - Email campaign management
+- `email_templates` - Email template storage
 
-### Mock Data
-Mock data tersedia untuk testing:
-- `src/data/mockUsers.ts` - Data pengguna
-- `src/data/mockGuests.ts` - Data tamu
-- `src/data/mockInvitations.ts` - Data undangan
-- `src/data/mockEvents.ts` - Data acara
-- `src/data/mockEmailTemplates.ts` - Template email
-- `src/data/mockThemes.ts` - Tema aplikasi
-- `src/data/mockDistance.ts` - Data jarak dan waktu tempuh
+### Security
+- Row Level Security (RLS) enabled on all tables
+- User-based access control
+- Secure API endpoints
 
-## 🎨 Kustomisasi Tema
+## 🎨 Admin Panel Features
 
-### Sistem Tema
-- **Warna**: Primary, secondary, accent, background, text
-- **Font**: Pilihan font yang beragam
-- **Layout**: Kustomisasi tata letak komponen
-- **Animasi**: Kontrol efek visual
+### Dashboard
+- Real-time visitor analytics
+- RSVP statistics
+- Recent guest activities
+- Quick action shortcuts
 
-### Cara Menggunakan
-1. Buka admin panel
-2. Pilih menu "Tema"
-3. Gunakan drag-and-drop editor
-4. Preview real-time
-5. Simpan dan aktifkan tema
+### User Management
+- Create and manage admin users
+- Role-based access control (Admin, Moderator, User)
+- User activation/deactivation
+- Email verification status
 
-## 📧 Konfigurasi Email
+### Guest Management
+- Complete guest database
+- RSVP tracking and management
+- Dietary requirements and special needs
+- Guest contact information
+- Export guest lists
 
-### SMTP Setup
-```env
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_ENCRYPTION=tls
+### Event Management
+- Ceremony and reception details
+- Interactive venue selection with maps
+- Event scheduling and timing
+- Contact person management
+- Dress code specifications
+
+### Email Campaigns
+- Bulk email sending to guests
+- Template management
+- Campaign tracking and analytics
+- Recipient grouping and filtering
+- Email delivery status
+
+### Location Management
+- Interactive map integration
+- Multiple venue support
+- GPS coordinates
+- Venue details and capacity
+- Amenities tracking
+
+### Theme Customization
+- Real-time theme preview
+- Color scheme customization
+- Typography settings
+- Layout configurations
+- Mobile responsiveness
+
+## 🔐 Authentication & Security
+
+- Secure user authentication
+- Role-based access control
+- Row Level Security (RLS) policies
+- Session management
+- Password reset functionality
+- Email verification
+
+## 📧 Email Integration
+
+The system includes comprehensive email functionality:
+
+### Setup Requirements
+1. **Resend Account**: Sign up at [resend.com](https://resend.com)
+2. **Domain Verification**: Verify your sending domain
+3. **API Key**: Generate and configure your API key
+
+### Features
+- **Campaign Management**: Create and manage email campaigns
+- **Template System**: Design reusable email templates
+- **Recipient Grouping**: Target specific guest groups
+- **Delivery Tracking**: Monitor email delivery status
+- **Analytics**: Track open rates and engagement
+
+## 🗺️ Map Integration
+
+Interactive maps powered by Leaflet:
+- **Venue Selection**: Point-and-click venue selection
+- **GPS Coordinates**: Automatic coordinate detection
+- **Multiple Locations**: Support for ceremony and reception venues
+- **Directions**: Integration with mapping services
+- **Mobile Friendly**: Responsive map interface
+
+## 🎯 Configuration
+
+### Wedding Hero Settings
+Configure the main wedding invitation page:
+- Bride and groom names
+- Wedding date and time
+- Venue information
+- Hero image and descriptions
+- Countdown timer settings
+
+### Email Templates
+Customize email communications:
+- Welcome messages
+- RSVP confirmations
+- Event reminders
+- Thank you notes
+
+## 📱 Responsive Design
+
+The entire system is built with mobile-first approach:
+- **Desktop**: Full-featured admin interface
+- **Tablet**: Optimized layouts and navigation
+- **Mobile**: Touch-friendly interface with essential features
+
+## 🔄 Data Management
+
+### Backup & Restore
+- Automated database backups
+- Export functionality for all data
+- Import/restore capabilities
+
+### Analytics & Reporting
+- Visitor tracking and analytics
+- RSVP response rates
+- Email campaign performance
+- Guest engagement metrics
+
+## 🚀 Deployment
+
+### Recommended Deployment
+1. **Frontend**: Deploy to Vercel, Netlify, or similar
+2. **Backend**: Supabase handles all backend infrastructure
+3. **Domain**: Configure custom domain in deployment platform
+
+### Environment Variables
+Ensure these are set in your deployment:
+```
+VITE_SUPABASE_URL=your_production_supabase_url
+VITE_SUPABASE_ANON_KEY=your_production_supabase_anon_key
 ```
 
-### Template Email
-- **Undangan Utama**: Template undangan lengkap
-- **Reminder**: Pengingat untuk tamu
-- **Thank You**: Ucapan terima kasih
+## 🤝 Contributing
 
-## 🗺️ Konfigurasi Peta
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Mapbox Setup
-1. Daftar di [Mapbox](https://mapbox.com)
-2. Dapatkan access token
-3. Tambahkan ke environment variables
-4. Konfigurasi style map sesuai kebutuhan
+## 📄 License
 
-### Fitur Peta
-- **Marker Custom**: Penanda lokasi acara
-- **Routing**: Rute optimal dari lokasi tamu
-- **Geocoding**: Konversi alamat ke koordinat
-- **Clustering**: Grup marker untuk performa
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📱 Deployment
+## 🆘 Support
 
-### Production Build
-```bash
-npm run build
-```
-
-### Deploy ke Vercel
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-### Deploy ke Netlify
-```bash
-npm run build
-# Upload folder dist ke Netlify
-```
-
-## 📈 Analytics & Reporting
-
-### Metrics yang Dilacak
-- **Kehadiran**: Statistik konfirmasi tamu
-- **Email**: Rate pembukaan dan response
-- **Geografis**: Sebaran lokasi tamu
-- **Timeline**: Tren konfirmasi kehadiran
-
-### Dashboard Admin
-- **Real-time Updates**: Data terbaru secara langsung
-- **Visual Charts**: Grafik interaktif
-- **Export Data**: Download laporan dalam format CSV/PDF
-
-## 🔐 Keamanan
-
-### Authentication
-- **JWT Tokens**: Secure token-based auth
-- **Role-based Access**: Admin dan user roles
-- **Password Hashing**: Bcrypt encryption
-
-### Data Protection
-- **SQL Injection**: Parameterized queries
-- **XSS Prevention**: Content sanitization
-- **CORS**: Configured cross-origin requests
-
-## 🤝 Kontribusi
-
-1. Fork repository
-2. Buat feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit perubahan (`git commit -m 'Add amazing feature'`)
-4. Push ke branch (`git push origin feature/amazing-feature`)
-5. Buat Pull Request
-
-## 📞 Support
-
-- **Email**: support@yourwedding.com
-- **Documentation**: [Link ke dokumentasi]
-- **Issues**: [GitHub Issues]
-
-## 📄 Lisensi
-
-MIT License - lihat file [LICENSE](LICENSE) untuk detail.
+For support and questions:
+1. Check the [Issues](../../issues) page
+2. Create a new issue with detailed description
+3. Include error messages and steps to reproduce
 
 ## 🎉 Acknowledgments
 
-- [Shadcn/UI](https://ui.shadcn.com) untuk komponen UI
-- [Tailwind CSS](https://tailwindcss.com) untuk styling
-- [Mapbox](https://mapbox.com) untuk fitur peta
-- [Heroicons](https://heroicons.com) untuk ikon
+- Built with [React](https://reactjs.org/)
+- UI components by [shadcn/ui](https://ui.shadcn.com/)
+- Backend by [Supabase](https://supabase.com/)
+- Maps by [Leaflet](https://leafletjs.com/)
+- Email service by [Resend](https://resend.com/)
 
 ---
 
-**Dibuat dengan ❤️ untuk momen spesial Anda**
+**Made with ❤️ for perfect wedding celebrations**

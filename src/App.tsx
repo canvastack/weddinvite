@@ -1,62 +1,58 @@
 
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
-
-// Pages
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
-
-// Admin Pages
+import Login from '@/pages/admin/Login';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
-import GuestManagement from '@/pages/admin/GuestManagement';
+import UserManagement from '@/components/admin/UserManagementFixed';
 import EmailBlastManager from '@/components/admin/EmailBlastManager';
 import MapManager from '@/components/admin/MapManager';
-import EventManagement from '@/pages/admin/EventManagement';
+import EventManagement from '@/pages/admin/EventManagementFixed';
 import ThemeEditor from '@/pages/admin/ThemeEditor';
 import ThemeManager from '@/pages/admin/ThemeManager';
-import Analytics from '@/pages/admin/Analytics';
-import UserManagement from '@/components/admin/UserManagement';
 import Settings from '@/pages/admin/Settings';
-import Login from '@/pages/admin/Login';
+import Analytics from '@/pages/admin/Analytics';
+import GuestManagement from '@/pages/admin/GuestManagement';
 import EditProfile from '@/pages/admin/EditProfile';
-import { WeddingHeroManager } from '@/components/admin/WeddingHeroManager';
+import { AuthProvider } from '@/components/AuthProvider';
+import { ThemeWrapper } from '@/components/ThemeWrapper';
+import { Toaster } from '@/components/ui/toaster';
 
-function App() {
+const queryClient = new QueryClient();
+
+const App = () => {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Index />} />
-          
-          {/* Admin Login */}
-          <Route path="/admin/login" element={<Login />} />
-          
-          {/* Protected Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="guests" element={<GuestManagement />} />
-            <Route path="email" element={<EmailBlastManager />} />
-            <Route path="map" element={<MapManager />} />
-            <Route path="events" element={<EventManagement />} />
-            <Route path="hero" element={<WeddingHeroManager />} />
-            <Route path="theme" element={<ThemeManager />} />
-            <Route path="theme-editor" element={<ThemeEditor />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="profile" element={<EditProfile />} />
-          </Route>
-          
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        
-        <Toaster />
-      </div>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeWrapper>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/admin/login" element={<Login />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="guests" element={<GuestManagement />} />
+                <Route path="events" element={<EventManagement />} />
+                <Route path="email" element={<EmailBlastManager />} />
+                <Route path="map" element={<MapManager />} />
+                <Route path="themes" element={<ThemeManager />} />
+                <Route path="theme-editor" element={<ThemeEditor />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="profile" element={<EditProfile />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+          <Toaster />
+        </ThemeWrapper>
+      </AuthProvider>
+    </QueryClientProvider>
   );
-}
+};
 
 export default App;
