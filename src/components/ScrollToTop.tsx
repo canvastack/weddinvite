@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUpIcon } from '@heroicons/react/24/outline';
-import { cn } from '@/lib/utils';
 
 export const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
+      if (window.pageYOffset > 400) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -22,23 +21,22 @@ export const ScrollToTop = () => {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
   return (
     <div
-      className={cn(
-        "fixed bottom-8 right-8 z-50 transition-all duration-300",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-      )}
+      className={`scroll-to-top ${isVisible ? 'visible' : ''}`}
     >
       <Button
         onClick={scrollToTop}
         variant="premium"
         size="icon"
-        className="h-12 w-12 rounded-full shadow-glow hover:shadow-premium transition-all duration-300 group"
+        className="h-14 w-14 rounded-full shadow-glow hover:shadow-premium transition-all duration-300 group relative overflow-hidden"
       >
+        {/* Animated background effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-glow to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
         <ChevronUpIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
       </Button>
     </div>

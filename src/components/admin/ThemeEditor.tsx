@@ -17,16 +17,15 @@ import {
   EyeIcon,
   PlusIcon,
   TrashIcon,
-  ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
   SunIcon,
   MoonIcon,
   CogIcon,
   SparklesIcon,
   BookmarkIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
-import { Save, Copy, Download, Upload } from 'lucide-react';
+import { Save, Copy, Download, Upload, Palette, Monitor } from 'lucide-react';
 import ThemePreview from './ThemePreview';
 
 const ThemeEditor = () => {
@@ -85,6 +84,11 @@ const ThemeEditor = () => {
       title: "Tema disimpan",
       description: "Perubahan tema telah disimpan",
     });
+  };
+
+  const handleApplyTheme = () => {
+    activateTheme(editingTheme);
+    setIsEditing(false);
   };
 
   const handleCreateNewTheme = () => {
@@ -199,13 +203,13 @@ const ThemeEditor = () => {
           <div className="flex items-center gap-2 mt-2">
             {isDefaultMode ? (
               <Badge variant="secondary" className="gap-2">
-                <CogIcon className="h-4 w-4" />
+                <ShieldCheckIcon className="h-4 w-4" />
                 Default Mode (Protected)
               </Badge>
             ) : (
               <Badge variant="default" className="gap-2">
                 <SparklesIcon className="h-4 w-4" />
-                Custom Theme Active
+                Custom Theme Active: {currentTheme.name}
               </Badge>
             )}
             <Badge variant="outline" className="gap-2">
@@ -302,9 +306,12 @@ const ThemeEditor = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                       {theme.isDefault && (
-                        <Badge variant="secondary" className="text-xs">Default</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          <ShieldCheckIcon className="h-3 w-3 mr-1" />
+                          Default
+                        </Badge>
                       )}
-                      {theme.isActive && (
+                      {currentTheme.id === theme.id && !isDefaultMode && (
                         <Badge variant="default" className="text-xs">Active</Badge>
                       )}
                     </div>
@@ -390,12 +397,15 @@ const ThemeEditor = () => {
                   <PaintBrushIcon className="h-5 w-5" />
                   Editor: {editingTheme.name}
                   {editingTheme.isDefault && (
-                    <Badge variant="secondary">Read-only</Badge>
+                    <Badge variant="secondary">
+                      <ShieldCheckIcon className="h-3 w-3 mr-1" />
+                      Protected
+                    </Badge>
                   )}
                 </CardTitle>
                 <CardDescription>
                   {editingTheme.isDefault 
-                    ? "Tema default dilindungi dan tidak dapat dimodifikasi"
+                    ? "Tema default dilindungi dan tidak dapat dimodifikasi. Buat tema baru untuk kustomisasi."
                     : "Kustomisasi warna, tipografi, dan efek visual"
                   }
                 </CardDescription>
@@ -407,11 +417,20 @@ const ThemeEditor = () => {
                     Simpan
                   </Button>
                 )}
+                {!editingTheme.isDefault && (
+                  <Button
+                    variant="outline"
+                    onClick={handleApplyTheme}
+                  >
+                    <Palette className="h-4 w-4 mr-2" />
+                    Terapkan
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => window.open('/', '_blank')}
                 >
-                  <EyeIcon className="h-4 w-4 mr-2" />
+                  <Monitor className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
               </div>

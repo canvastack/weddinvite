@@ -23,20 +23,23 @@ export const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ children, className 
     <div 
       className={`${className} theme-${currentTheme.id}`}
       style={{
-        '--dynamic-primary': currentTheme.colors.primary,
-        '--dynamic-primary-glow': currentTheme.colors.primaryGlow,
-        '--dynamic-secondary': currentTheme.colors.secondary,
-        '--dynamic-accent': currentTheme.colors.accent,
-        '--dynamic-rose-gold': currentTheme.colors.roseGold,
-        '--dynamic-background': currentTheme.colors.background,
-        '--dynamic-card': currentTheme.colors.card,
-        '--dynamic-text': currentTheme.colors.text,
-        '--dynamic-muted': currentTheme.colors.muted,
-        '--dynamic-border': currentTheme.colors.border,
-        '--dynamic-font-family': currentTheme.typography.fontFamily,
-        '--dynamic-font-size': currentTheme.typography.fontSize,
-        '--dynamic-radius': currentTheme.layout.borderRadius,
-        '--dynamic-spacing': currentTheme.layout.spacing,
+        '--theme-primary': currentTheme.colors.primary,
+        '--theme-primary-glow': currentTheme.colors.primaryGlow,
+        '--theme-secondary': currentTheme.colors.secondary,
+        '--theme-accent': currentTheme.colors.accent,
+        '--theme-rose-gold': currentTheme.colors.roseGold,
+        '--theme-background': currentTheme.colors.background,
+        '--theme-card': currentTheme.colors.card,
+        '--theme-foreground': currentTheme.colors.text,
+        '--theme-muted-foreground': currentTheme.colors.muted,
+        '--theme-border': currentTheme.colors.border,
+        '--theme-font-family': currentTheme.typography.fontFamily,
+        '--theme-heading-font': currentTheme.typography.headingFont,
+        '--theme-font-size': currentTheme.typography.fontSize,
+        '--theme-line-height': currentTheme.typography.lineHeight,
+        '--theme-radius': currentTheme.layout.borderRadius,
+        '--theme-spacing': currentTheme.layout.spacing,
+        '--theme-section-padding': currentTheme.layout.sectionPadding,
       } as React.CSSProperties}
     >
       {children}

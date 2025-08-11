@@ -11,12 +11,14 @@ export const ThemeToggle = () => {
       variant="ghost"
       size="icon"
       onClick={toggleDarkMode}
-      className="smoke-effect premium-hover rounded-full border border-primary/20 backdrop-blur-sm"
+      className="smoke-effect premium-hover rounded-full border border-primary/20 backdrop-blur-sm relative overflow-hidden group"
     >
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-rose-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
       {isDarkMode ? (
-        <SunIcon className="h-5 w-5 text-primary" />
+        <SunIcon className="h-5 w-5 text-primary relative z-10 group-hover:scale-110 transition-transform" />
       ) : (
-        <MoonIcon className="h-5 w-5 text-primary" />
+        <MoonIcon className="h-5 w-5 text-primary relative z-10 group-hover:scale-110 transition-transform" />
       )}
     </Button>
   );

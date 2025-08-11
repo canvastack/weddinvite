@@ -356,42 +356,60 @@ export const useThemeManager = () => {
   // Apply theme to CSS variables
   const applyTheme = (theme: ThemeConfig, darkMode: boolean = false) => {
     if (isDefaultMode && theme.isDefault) {
-      // Don't override default theme
+      // Don't override default theme - just apply dark mode class
+      document.documentElement.classList.toggle('dark', darkMode);
       return;
     }
 
     const root = document.documentElement;
     const colors = darkMode && theme.darkMode.enabled ? theme.darkMode.colors : theme.colors;
     
-    // Apply color variables
-    root.style.setProperty('--primary', colors.primary || theme.colors.primary);
-    root.style.setProperty('--primary-glow', colors.primaryGlow || theme.colors.primaryGlow);
-    root.style.setProperty('--secondary', colors.secondary || theme.colors.secondary);
-    root.style.setProperty('--accent', colors.accent || theme.colors.accent);
-    root.style.setProperty('--rose-gold', colors.roseGold || theme.colors.roseGold);
-    root.style.setProperty('--background', colors.background || theme.colors.background);
-    root.style.setProperty('--card', colors.card || theme.colors.card);
-    root.style.setProperty('--foreground', colors.text || theme.colors.text);
-    root.style.setProperty('--muted-foreground', colors.muted || theme.colors.muted);
-    root.style.setProperty('--border', colors.border || theme.colors.border);
+    // Apply color variables with theme prefix to avoid conflicts
+    root.style.setProperty('--theme-primary', colors.primary || theme.colors.primary);
+    root.style.setProperty('--theme-primary-glow', colors.primaryGlow || theme.colors.primaryGlow);
+    root.style.setProperty('--theme-secondary', colors.secondary || theme.colors.secondary);
+    root.style.setProperty('--theme-accent', colors.accent || theme.colors.accent);
+    root.style.setProperty('--theme-rose-gold', colors.roseGold || theme.colors.roseGold);
+    root.style.setProperty('--theme-background', colors.background || theme.colors.background);
+    root.style.setProperty('--theme-card', colors.card || theme.colors.card);
+    root.style.setProperty('--theme-foreground', colors.text || theme.colors.text);
+    root.style.setProperty('--theme-muted-foreground', colors.muted || theme.colors.muted);
+    root.style.setProperty('--theme-border', colors.border || theme.colors.border);
     
     // Apply typography
-    root.style.setProperty('--font-family', theme.typography.fontFamily);
-    root.style.setProperty('--heading-font', theme.typography.headingFont);
-    root.style.setProperty('--font-size', theme.typography.fontSize);
+    root.style.setProperty('--theme-font-family', theme.typography.fontFamily);
+    root.style.setProperty('--theme-heading-font', theme.typography.headingFont);
+    root.style.setProperty('--theme-font-size', theme.typography.fontSize);
+    root.style.setProperty('--theme-line-height', theme.typography.lineHeight);
     
     // Apply layout
-    root.style.setProperty('--radius', theme.layout.borderRadius);
-    root.style.setProperty('--spacing', theme.layout.spacing);
+    root.style.setProperty('--theme-radius', theme.layout.borderRadius);
+    root.style.setProperty('--theme-spacing', theme.layout.spacing);
+    root.style.setProperty('--theme-section-padding', theme.layout.sectionPadding);
     
-    // Apply theme class to body
+    // Apply theme class to body for component-specific styling
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     if (!theme.isDefault) {
       document.body.classList.add(`theme-${theme.id}`);
+      document.body.classList.add('theme-active');
     }
     
     // Apply dark mode class
     document.documentElement.classList.toggle('dark', darkMode);
+    
+    // Override CSS variables when theme is active
+    if (!theme.isDefault) {
+      root.style.setProperty('--primary', colors.primary || theme.colors.primary);
+      root.style.setProperty('--primary-glow', colors.primaryGlow || theme.colors.primaryGlow);
+      root.style.setProperty('--secondary', colors.secondary || theme.colors.secondary);
+      root.style.setProperty('--accent', colors.accent || theme.colors.accent);
+      root.style.setProperty('--rose-gold', colors.roseGold || theme.colors.roseGold);
+      root.style.setProperty('--background', colors.background || theme.colors.background);
+      root.style.setProperty('--card', colors.card || theme.colors.card);
+      root.style.setProperty('--foreground', colors.text || theme.colors.text);
+      root.style.setProperty('--muted-foreground', colors.muted || theme.colors.muted);
+      root.style.setProperty('--border', colors.border || theme.colors.border);
+    }
   };
 
   const activateTheme = (theme: ThemeConfig) => {
@@ -464,17 +482,22 @@ export const useThemeManager = () => {
     // Remove all custom CSS variables
     const root = document.documentElement;
     const customProperties = [
-      '--primary', '--primary-glow', '--secondary', '--accent', '--rose-gold',
-      '--background', '--card', '--foreground', '--muted-foreground', '--border',
-      '--font-family', '--heading-font', '--font-size', '--radius', '--spacing'
+      '--theme-primary', '--theme-primary-glow', '--theme-secondary', '--theme-accent', '--theme-rose-gold',
+      '--theme-background', '--theme-card', '--theme-foreground', '--theme-muted-foreground', '--theme-border',
+      '--theme-font-family', '--theme-heading-font', '--theme-font-size', '--theme-line-height', '--theme-radius', 
+      '--theme-spacing', '--theme-section-padding'
     ];
     
     customProperties.forEach(prop => {
       root.style.removeProperty(prop);
     });
     
-    // Remove theme classes
+    // Remove theme classes but keep dark mode
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
+    document.body.classList.remove('theme-active');
+    
+    // Apply dark mode to default theme
+    document.documentElement.classList.toggle('dark', isDarkMode);
   };
 
   const toggleDarkMode = () => {
@@ -546,7 +569,7 @@ export const useThemeManager = () => {
   }, [currentTheme, isDarkMode, isDefaultMode]);
 
   return {
-    themes,
+    themes: [DEFAULT_THEME, ...themes],
     currentTheme,
     isDefaultMode,
     isDarkMode,

@@ -4,7 +4,7 @@ import ThemeEditor from '@/components/admin/ThemeEditor';
 
 const ThemeManagement = () => {
   return (
-    <div className="container mx-auto py-6">
+    <div className="space-y-6">
       <ThemeEditor />
     </div>
   );

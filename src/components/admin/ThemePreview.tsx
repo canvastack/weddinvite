@@ -1,7 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ThemeConfig } from '@/hooks/useThemeManager';
 import { HeartIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
@@ -16,32 +14,48 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
 
   return (
     <div 
-      className={`p-8 rounded-lg border space-y-6 transition-all duration-300 ${className}`}
+      className={`p-8 rounded-lg border space-y-6 transition-all duration-300 overflow-hidden ${className}`}
       style={{
         backgroundColor: `hsl(${colors.background})`,
         borderColor: `hsl(${colors.border})`,
         fontFamily: theme.typography.fontFamily,
         fontSize: theme.typography.fontSize,
         borderRadius: theme.layout.borderRadius,
+        lineHeight: theme.typography.lineHeight,
       }}
     >
+      {/* Background effects based on theme */}
+      {theme.effects.gradientStyle !== 'none' && (
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: theme.effects.gradientStyle === 'romantic' 
+              ? `radial-gradient(circle at 20% 50%, hsl(${theme.colors.primary}/0.1), transparent 50%)`
+              : theme.effects.gradientStyle === 'modern'
+              ? `linear-gradient(135deg, hsl(${theme.colors.primary}/0.05), hsl(${theme.colors.accent}/0.05))`
+              : `linear-gradient(135deg, hsl(${theme.colors.primary}/0.1), hsl(${theme.colors.primaryGlow}/0.1))`
+          }}
+        />
+      )}
+
       {/* Hero Section Preview */}
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-4 relative z-10">
         <div className="relative">
           <HeartIcon 
-            className="h-12 w-12 mx-auto mb-4"
+            className={`h-12 w-12 mx-auto mb-4 ${theme.effects.animationSpeed !== 'instant' ? 'floating' : ''}`}
             style={{ color: `hsl(${theme.colors.primary})` }}
           />
         </div>
         
         <h1 
-          className="text-4xl font-bold"
+          className={`text-4xl font-bold ${theme.effects.animationSpeed !== 'instant' ? 'fade-in-up' : ''}`}
           style={{ 
             background: `linear-gradient(135deg, hsl(${theme.colors.primary}), hsl(${theme.colors.primaryGlow}))`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            fontFamily: theme.typography.headingFont
+            fontFamily: theme.typography.headingFont,
+            fontWeight: theme.typography.fontWeight.bold
           }}
         >
           Dhika & Sari
@@ -56,9 +70,9 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       </div>
 
       {/* Info Cards Preview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
         <div 
-          className="p-4 rounded-lg border transition-all duration-300"
+          className={`p-4 rounded-lg border transition-all duration-300 ${theme.components.cardStyle === 'elegant' ? 'elegant-card' : ''}`}
           style={{
             backgroundColor: `hsl(${colors.card})`,
             borderColor: `hsl(${colors.border})`,
@@ -67,6 +81,8 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
               ? `0 10px 20px -5px hsl(${theme.colors.primary} / 0.2)` 
               : theme.effects.shadowStyle === 'soft'
               ? `0 4px 6px -1px hsl(${theme.colors.primary} / 0.1)`
+              : theme.effects.shadowStyle === 'dramatic'
+              ? `0 25px 50px -12px hsl(${theme.colors.primary} / 0.4)`
               : 'none'
           }}
         >
@@ -82,7 +98,8 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
             </div>
             <div>
               <p 
-                className="font-semibold"
+                className="font-semibold text-sm"
+                  fontWeight: theme.typography.fontWeight.medium
                 style={{ color: `hsl(${colors.text})` }}
               >
                 Tanggal Pernikahan
@@ -97,14 +114,17 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
           </div>
           <p 
             className="text-lg font-bold"
-            style={{ color: `hsl(${theme.colors.primary})` }}
+            style={{ 
+              color: `hsl(${theme.colors.primary})`,
+              fontWeight: theme.typography.fontWeight.bold
+            }}
           >
             15 Februari 2025
           </p>
         </div>
 
         <div 
-          className="p-4 rounded-lg border transition-all duration-300"
+          className={`p-4 rounded-lg border transition-all duration-300 ${theme.components.cardStyle === 'elegant' ? 'elegant-card' : ''}`}
           style={{
             backgroundColor: `hsl(${colors.card})`,
             borderColor: `hsl(${colors.border})`,
@@ -113,6 +133,8 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
               ? `0 10px 20px -5px hsl(${theme.colors.roseGold} / 0.2)` 
               : theme.effects.shadowStyle === 'soft'
               ? `0 4px 6px -1px hsl(${theme.colors.roseGold} / 0.1)`
+              : theme.effects.shadowStyle === 'dramatic'
+              ? `0 25px 50px -12px hsl(${theme.colors.roseGold} / 0.4)`
               : 'none'
           }}
         >
@@ -128,7 +150,8 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
             </div>
             <div>
               <p 
-                className="font-semibold"
+                className="font-semibold text-sm"
+                  fontWeight: theme.typography.fontWeight.medium
                 style={{ color: `hsl(${colors.text})` }}
               >
                 Lokasi Acara
@@ -143,7 +166,10 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
           </div>
           <p 
             className="text-lg font-bold"
-            style={{ color: `hsl(${theme.colors.roseGold})` }}
+            style={{ 
+              color: `hsl(${theme.colors.roseGold})`,
+              fontWeight: theme.typography.fontWeight.bold
+            }}
           >
             Gedung Serbaguna
           </p>
@@ -151,15 +177,19 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       </div>
 
       {/* Button Preview */}
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-4 justify-center relative z-10">
         <button 
-          className="px-6 py-3 font-medium transition-all duration-300 hover:scale-105"
+          className={`px-6 py-3 font-medium transition-all duration-300 hover:scale-105 ${
+            theme.components.buttonStyle === 'premium' ? 'premium-hover' : ''
+          }`}
           style={{
             backgroundColor: `hsl(${theme.colors.primary})`,
             color: `hsl(${colors.background})`,
             borderRadius: theme.layout.borderRadius,
             boxShadow: theme.effects.shadowStyle === 'premium' 
               ? `0 10px 20px -5px hsl(${theme.colors.primary} / 0.4)`
+              : theme.effects.shadowStyle === 'dramatic'
+              ? `0 20px 40px -10px hsl(${theme.colors.primary} / 0.5)`
               : 'none',
             fontWeight: theme.typography.fontWeight.medium
           }}
@@ -167,7 +197,9 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
           Primary Button
         </button>
         <button 
-          className="px-6 py-3 font-medium border transition-all duration-300 hover:scale-105"
+          className={`px-6 py-3 font-medium border transition-all duration-300 hover:scale-105 ${
+            theme.components.buttonStyle === 'elegant' ? 'elegant-card' : ''
+          }`}
           style={{
             borderColor: `hsl(${theme.colors.roseGold})`,
             color: `hsl(${theme.colors.roseGold})`,
@@ -181,19 +213,21 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       </div>
 
       {/* Typography Preview */}
-      <div className="space-y-3">
+      <div className="space-y-3 relative z-10">
         <h2 
           className="text-2xl font-bold"
           style={{ 
             color: `hsl(${colors.text})`,
-            fontFamily: theme.typography.headingFont
+            fontFamily: theme.typography.headingFont,
+            fontWeight: theme.typography.fontWeight.bold
           }}
         >
           Typography Preview
         </h2>
         <p style={{ 
           color: `hsl(${colors.text})`,
-          lineHeight: theme.typography.lineHeight
+          lineHeight: theme.typography.lineHeight,
+          fontWeight: theme.typography.fontWeight.normal
         }}>
           This is how regular text will appear with the selected typography settings. 
           The font family is {theme.typography.fontFamily} with a size of {theme.typography.fontSize}.
@@ -205,6 +239,28 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
           This is muted text that provides secondary information.
         </p>
       </div>
+
+      {/* Effects Preview */}
+      {theme.effects.blurIntensity !== 'none' && (
+        <div className="relative z-10">
+          <div 
+            className="p-4 rounded-lg"
+            style={{
+              backgroundColor: `hsl(${colors.card})`,
+              backdropFilter: theme.effects.blurIntensity === 'heavy' ? 'blur(20px)' 
+                : theme.effects.blurIntensity === 'medium' ? 'blur(12px)'
+                : theme.effects.blurIntensity === 'light' ? 'blur(8px)'
+                : 'none',
+              border: `1px solid hsl(${colors.border})`,
+              borderRadius: theme.layout.borderRadius
+            }}
+          >
+            <p style={{ color: `hsl(${colors.text})` }}>
+              Blur Effect: {theme.effects.blurIntensity}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

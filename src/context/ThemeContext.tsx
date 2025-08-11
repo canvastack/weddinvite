@@ -260,7 +260,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Add theme-specific class to body
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
-    document.body.classList.add(`theme-${theme.id}`);
+    document.body.classList.add(`theme-${theme.id}`, 'theme-active');
   };
 
   // Reset to default theme styles
@@ -281,6 +281,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
     
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
+    document.body.classList.remove('theme-active');
   };
 
   const setCurrentTheme = (theme: Theme) => {
