@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,14 +46,14 @@ const GuestForm = ({ guest, isOpen, onClose, onSubmit }: GuestFormProps) => {
         setFormData(prev => ({
           ...prev,
           address: geocodeResult.address,
-          city: geocodeResult.name.split(',')[0] || '',
-          province: geocodeResult.address.includes('Jakarta') ? 'DKI Jakarta' : 
-                   geocodeResult.address.includes('Bandung') ? 'Jawa Barat' :
-                   geocodeResult.address.includes('Surabaya') ? 'Jawa Timur' : '',
+          city: geocodeResult.city,
+          province: geocodeResult.province,
+          postal_code: geocodeResult.postalCode,
           latitude: lat,
           longitude: lng
         }));
       } else {
+        // Fallback if geocoding fails
         setFormData(prev => ({
           ...prev,
           latitude: lat,
