@@ -8,6 +8,8 @@ import { useTheme } from '@/context/ThemeContext';
 import { 
   HomeIcon,
   UsersIcon,
+  HeartIcon,
+  DocumentTextIcon,
   EnvelopeIcon,
   MapPinIcon,
   CogIcon,

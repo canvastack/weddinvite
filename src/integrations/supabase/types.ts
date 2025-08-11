@@ -123,6 +123,165 @@ export type Database = {
           },
         ]
       }
+      wedding_contact_info: {
+        Row: {
+          created_at: string | null
+          email_address: string | null
+          email_text: string
+          help_description: string | null
+          help_title: string
+          id: string
+          is_visible: boolean | null
+          updated_at: string | null
+          whatsapp_number: string | null
+          whatsapp_text: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_address?: string | null
+          email_text?: string
+          help_description?: string | null
+          help_title: string
+          id?: string
+          is_visible?: boolean | null
+          updated_at?: string | null
+          whatsapp_number?: string | null
+          whatsapp_text?: string
+        }
+        Update: {
+          created_at?: string | null
+          email_address?: string | null
+          email_text?: string
+          help_description?: string | null
+          help_title?: string
+          id?: string
+          is_visible?: boolean | null
+          updated_at?: string | null
+          whatsapp_number?: string | null
+          whatsapp_text?: string
+        }
+        Relationships: []
+      }
+      wedding_couple_info: {
+        Row: {
+          bride_description: string | null
+          bride_education: string | null
+          bride_full_name: string
+          bride_hobbies: string | null
+          bride_image_url: string | null
+          bride_name: string
+          bride_parents: string
+          bride_profession: string | null
+          created_at: string | null
+          groom_description: string | null
+          groom_education: string | null
+          groom_full_name: string
+          groom_hobbies: string | null
+          groom_image_url: string | null
+          groom_name: string
+          groom_parents: string
+          groom_profession: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          bride_description?: string | null
+          bride_education?: string | null
+          bride_full_name: string
+          bride_hobbies?: string | null
+          bride_image_url?: string | null
+          bride_name: string
+          bride_parents: string
+          bride_profession?: string | null
+          created_at?: string | null
+          groom_description?: string | null
+          groom_education?: string | null
+          groom_full_name: string
+          groom_hobbies?: string | null
+          groom_image_url?: string | null
+          groom_name: string
+          groom_parents: string
+          groom_profession?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          bride_description?: string | null
+          bride_education?: string | null
+          bride_full_name?: string
+          bride_hobbies?: string | null
+          bride_image_url?: string | null
+          bride_name?: string
+          bride_parents?: string
+          bride_profession?: string | null
+          created_at?: string | null
+          groom_description?: string | null
+          groom_education?: string | null
+          groom_full_name?: string
+          groom_hobbies?: string | null
+          groom_image_url?: string | null
+          groom_name?: string
+          groom_parents?: string
+          groom_profession?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      wedding_footer_content: {
+        Row: {
+          contact_address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          copyright_text: string | null
+          couple_names: string
+          created_at: string | null
+          footer_description: string | null
+          id: string
+          is_visible: boolean | null
+          social_buttons: Json | null
+          thank_you_message: string | null
+          thank_you_title: string
+          updated_at: string | null
+          wedding_date: string
+        }
+        Insert: {
+          contact_address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          copyright_text?: string | null
+          couple_names: string
+          created_at?: string | null
+          footer_description?: string | null
+          id?: string
+          is_visible?: boolean | null
+          social_buttons?: Json | null
+          thank_you_message?: string | null
+          thank_you_title?: string
+          updated_at?: string | null
+          wedding_date: string
+        }
+        Update: {
+          contact_address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          copyright_text?: string | null
+          couple_names?: string
+          created_at?: string | null
+          footer_description?: string | null
+          id?: string
+          is_visible?: boolean | null
+          social_buttons?: Json | null
+          thank_you_message?: string | null
+          thank_you_title?: string
+          updated_at?: string | null
+          wedding_date?: string
+        }
+        Relationships: []
+      }
       wedding_hero_settings: {
         Row: {
           bride_name: string
@@ -177,6 +336,87 @@ export type Database = {
           updated_at?: string | null
           wedding_date?: string
           wedding_time?: string
+        }
+        Relationships: []
+      }
+      wedding_important_info: {
+        Row: {
+          additional_info: Json | null
+          created_at: string | null
+          dress_code_description: string | null
+          dress_code_title: string
+          download_invitation_enabled: boolean | null
+          download_invitation_text: string
+          health_protocol_description: string | null
+          health_protocol_title: string
+          id: string
+          is_visible: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          additional_info?: Json | null
+          created_at?: string | null
+          dress_code_description?: string | null
+          dress_code_title?: string
+          download_invitation_enabled?: boolean | null
+          download_invitation_text?: string
+          health_protocol_description?: string | null
+          health_protocol_title?: string
+          id?: string
+          is_visible?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Update: {
+          additional_info?: Json | null
+          created_at?: string | null
+          dress_code_description?: string | null
+          dress_code_title?: string
+          download_invitation_enabled?: boolean | null
+          download_invitation_text?: string
+          health_protocol_description?: string | null
+          health_protocol_title?: string
+          id?: string
+          is_visible?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      wedding_love_story: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          full_story: string | null
+          id: string
+          is_visible: boolean | null
+          subtitle: string | null
+          timeline_items: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          full_story?: string | null
+          id?: string
+          is_visible?: boolean | null
+          subtitle?: string | null
+          timeline_items?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          full_story?: string | null
+          id?: string
+          is_visible?: boolean | null
+          subtitle?: string | null
+          timeline_items?: Json | null
+          title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
