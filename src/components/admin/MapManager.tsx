@@ -16,12 +16,12 @@ import {
   PlusIcon, 
   PencilIcon, 
   TrashIcon,
-  GlobeAltIcon,
   BuildingOfficeIcon,
   HomeIcon,
   HeartIcon
 } from '@heroicons/react/24/outline';
-import { Loader2, Navigation, Clock, Phone, Globe, MapPin } from 'lucide-react';
+import { Loader2, Navigation, Clock, Phone, Map, MapPin } from 'lucide-react';
+import LocationFormWithMap from './LocationFormWithMap';
 
 interface Location {
   id: string;
@@ -88,153 +88,70 @@ export const MapManager = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [isGeocodingLoading, setIsGeocodingLoading] = useState(false);
   const { toast } = useToast();
-
-  // Form states
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'ceremony' as Location['type'],
-    address: '',
-    city: '',
-    coordinates: { lat: -6.2088, lng: 106.8270 }, // Jakarta default
-    description: '',
-    contact_phone: '',
-    website: '',
-    operating_hours: '',
-    capacity: '',
-    amenities: [] as string[],
-    is_primary: false,
-    is_active: true
-  });
 
   const locationTypes = [
     { value: 'ceremony', label: 'Ceremony', icon: HeartIcon, color: 'bg-red-100 text-red-800' },
     { value: 'reception', label: 'Reception', icon: BuildingOfficeIcon, color: 'bg-blue-100 text-blue-800' },
     { value: 'hotel', label: 'Hotel', icon: HomeIcon, color: 'bg-green-100 text-green-800' },
     { value: 'parking', label: 'Parking', icon: MapPinIcon, color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'other', label: 'Other', icon: GlobeAltIcon, color: 'bg-gray-100 text-gray-800' }
+    { value: 'other', label: 'Other', icon: MapPinIcon, color: 'bg-gray-100 text-gray-800' }
   ];
 
-  const commonAmenities = [
-    'Parking', 'AC', 'Sound System', 'Stage', 'Photo Booth', 'Catering Kitchen',
-    'Prayer Room', 'Bridal Room', 'Security', 'WiFi', 'Generator', 'Garden'
-  ];
+  const handleCreateLocation = (locationData: any) => {
+    const newLocation: Location = {
+      id: Date.now().toString(),
+      ...locationData,
+      coordinates: {
+        lat: locationData.latitude,
+        lng: locationData.longitude
+      },
+      amenities: [],
+      is_primary: false,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-  // Geocoding function (mock implementation)
-  const geocodeAddress = async (address: string) => {
-    setIsGeocodingLoading(true);
-    try {
-      // Mock geocoding - in real app, use Google Maps Geocoding API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Return mock coordinates based on city
-      const mockCoordinates = {
-        'jakarta': { lat: -6.2088, lng: 106.8456 },
-        'bekasi': { lat: -6.2088, lng: 107.0456 },
-        'bandung': { lat: -6.9175, lng: 107.6191 },
-        'surabaya': { lat: -7.2504, lng: 112.7688 }
-      };
-
-      const city = address.toLowerCase();
-      for (const [key, coords] of Object.entries(mockCoordinates)) {
-        if (city.includes(key)) {
-          return coords;
-        }
-      }
-
-      // Default Jakarta coordinates
-      return { lat: -6.2088, lng: 106.8270 };
-    } catch (error) {
-      toast({
-        title: "Geocoding Error",
-        description: "Gagal mendapatkan koordinat lokasi",
-        variant: "destructive",
-      });
-      return formData.coordinates;
-    } finally {
-      setIsGeocodingLoading(false);
-    }
-  };
-
-  const handleGeocode = async () => {
-    if (!formData.address) {
-      toast({
-        title: "Error",
-        description: "Masukkan alamat terlebih dahulu",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const coordinates = await geocodeAddress(formData.address);
-    setFormData(prev => ({ ...prev, coordinates }));
+    setLocations(prev => [newLocation, ...prev]);
+    setIsCreateDialogOpen(false);
     
     toast({
-      title: "Geocoding Success",
-      description: "Koordinat berhasil ditemukan",
+      title: "Location Created",
+      description: `${newLocation.name} berhasil ditambahkan`,
     });
   };
 
-  const createLocation = async () => {
-    try {
-      const newLocation: Location = {
-        ...formData,
-        id: Date.now().toString(),
-        capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      setLocations(prev => [newLocation, ...prev]);
-      setIsCreateDialogOpen(false);
-      resetForm();
-      
-      toast({
-        title: "Location Created",
-        description: `${newLocation.name} berhasil ditambahkan`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Gagal menambahkan lokasi",
-        variant: "destructive",
-      });
-    }
+  const handleEditLocation = (location: Location) => {
+    setSelectedLocation(location);
+    setIsEditDialogOpen(true);
   };
 
-  const updateLocation = async () => {
+  const handleUpdateLocation = (locationData: any) => {
     if (!selectedLocation) return;
 
-    try {
-      const updatedLocation: Location = {
-        ...selectedLocation,
-        ...formData,
-        capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
-        updated_at: new Date().toISOString(),
-      };
+    const updatedLocation: Location = {
+      ...selectedLocation,
+      ...locationData,
+      coordinates: {
+        lat: locationData.latitude,
+        lng: locationData.longitude
+      },
+      updated_at: new Date().toISOString(),
+    };
 
-      setLocations(prev => prev.map(loc => 
-        loc.id === selectedLocation.id ? updatedLocation : loc
-      ));
-      setIsEditDialogOpen(false);
-      setSelectedLocation(null);
-      resetForm();
-      
-      toast({
-        title: "Location Updated",
-        description: `${updatedLocation.name} berhasil diperbarui`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Gagal memperbarui lokasi",
-        variant: "destructive",
-      });
-    }
+    setLocations(prev => prev.map(loc => 
+      loc.id === selectedLocation.id ? updatedLocation : loc
+    ));
+    setIsEditDialogOpen(false);
+    setSelectedLocation(null);
+    
+    toast({
+      title: "Location Updated",
+      description: `${updatedLocation.name} berhasil diperbarui`,
+    });
   };
 
   const deleteLocation = async (locationId: string) => {
@@ -274,58 +191,6 @@ export const MapManager = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      type: 'ceremony',
-      address: '',
-      city: '',
-      coordinates: { lat: -6.2088, lng: 106.8270 },
-      description: '',
-      contact_phone: '',
-      website: '',
-      operating_hours: '',
-      capacity: '',
-      amenities: [],
-      is_primary: false,
-      is_active: true
-    });
-  };
-
-  const openEditDialog = (location: Location) => {
-    setSelectedLocation(location);
-    setFormData({
-      name: location.name,
-      type: location.type,
-      address: location.address,
-      city: location.city,
-      coordinates: location.coordinates,
-      description: location.description || '',
-      contact_phone: location.contact_phone || '',
-      website: location.website || '',
-      operating_hours: location.operating_hours || '',
-      capacity: location.capacity?.toString() || '',
-      amenities: location.amenities || [],
-      is_primary: location.is_primary,
-      is_active: location.is_active
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  const openViewDialog = (location: Location) => {
-    setSelectedLocation(location);
-    setIsViewDialogOpen(true);
-  };
-
-  const toggleAmenity = (amenity: string) => {
-    setFormData(prev => ({
-      ...prev,
-      amenities: prev.amenities.includes(amenity)
-        ? prev.amenities.filter(a => a !== amenity)
-        : [...prev.amenities, amenity]
-    }));
-  };
-
   const filteredLocations = locations.filter(location => {
     const matchesSearch = location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          location.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -357,193 +222,16 @@ export const MapManager = () => {
               Add Location
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Location</DialogTitle>
               <DialogDescription>Add a new venue or important location for the wedding</DialogDescription>
             </DialogHeader>
             
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                <TabsTrigger value="contact">Contact & Hours</TabsTrigger>
-                <TabsTrigger value="features">Features</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="basic" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Location Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Masjid Al-Ikhlas"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Location Type</Label>
-                    <select
-                      id="type"
-                      value={formData.type}
-                      onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as Location['type'] }))}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {locationTypes.map(type => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="address">Full Address</Label>
-                  <Textarea
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    placeholder="Enter full address"
-                    rows={2}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="e.g., Jakarta"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Coordinates</Label>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={handleGeocode}
-                      disabled={isGeocodingLoading}
-                      className="w-full"
-                    >
-                      {isGeocodingLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Getting Location...
-                        </>
-                      ) : (
-                        <>
-                          <Navigation className="h-4 w-4 mr-2" />
-                          Get Coordinates
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Brief description of the location"
-                    rows={3}
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="contact" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Contact Phone</Label>
-                    <Input
-                      id="phone"
-                      value={formData.contact_phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
-                      placeholder="+62 812-3456-7890"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      value={formData.website}
-                      onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="hours">Operating Hours</Label>
-                    <Input
-                      id="hours"
-                      value={formData.operating_hours}
-                      onChange={(e) => setFormData(prev => ({ ...prev, operating_hours: e.target.value }))}
-                      placeholder="08:00 - 22:00"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="capacity">Capacity</Label>
-                    <Input
-                      id="capacity"
-                      type="number"
-                      value={formData.capacity}
-                      onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
-                      placeholder="500"
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="features" className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Amenities</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {commonAmenities.map(amenity => (
-                      <div key={amenity} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={amenity}
-                          checked={formData.amenities.includes(amenity)}
-                          onChange={() => toggleAmenity(amenity)}
-                          className="rounded"
-                        />
-                        <Label htmlFor={amenity} className="text-sm">{amenity}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="primary"
-                      checked={formData.is_primary}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_primary: checked }))}
-                    />
-                    <Label htmlFor="primary">Primary Location</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="active"
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                    />
-                    <Label htmlFor="active">Active</Label>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={createLocation}>Create Location</Button>
-            </div>
+            <LocationFormWithMap
+              onSubmit={handleCreateLocation}
+              onCancel={() => setIsCreateDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -631,8 +319,9 @@ export const MapManager = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => openGoogleMaps(location.coordinates)}
+                      title="Buka di Google Maps"
                     >
-                      <Globe className="h-4 w-4" />
+                      <Map className="h-4 w-4" />
                     </Button>
                     <Switch
                       checked={location.is_active}
@@ -641,14 +330,8 @@ export const MapManager = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => openViewDialog(location)}
-                    >
-                      <GlobeAltIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDialog(location)}
+                      onClick={() => handleEditLocation(location)}
+                      title="Edit Location"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </Button>
@@ -657,6 +340,7 @@ export const MapManager = () => {
                       size="sm"
                       onClick={() => deleteLocation(location.id)}
                       className="text-red-600 hover:text-red-700"
+                      title="Delete Location"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </Button>
@@ -679,6 +363,34 @@ export const MapManager = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Location Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Location</DialogTitle>
+            <DialogDescription>Update location information</DialogDescription>
+          </DialogHeader>
+          
+          {selectedLocation && (
+            <LocationFormWithMap
+              initialData={{
+                name: selectedLocation.name,
+                address: selectedLocation.address,
+                type: selectedLocation.type,
+                description: selectedLocation.description,
+                latitude: selectedLocation.coordinates.lat,
+                longitude: selectedLocation.coordinates.lng
+              }}
+              onSubmit={handleUpdateLocation}
+              onCancel={() => {
+                setIsEditDialogOpen(false);
+                setSelectedLocation(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
