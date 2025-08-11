@@ -11,16 +11,26 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-interface SimpleMapDisplayProps {
+interface Location {
+  id: string;
+  name: string;
+  address: string;
   latitude: number;
   longitude: number;
-  name: string;
-  height?: string;
+  type: 'venue' | 'accommodation' | 'other';
+  description?: string;
 }
 
-const SimpleMapDisplay = ({ latitude, longitude, name, height = "300px" }: SimpleMapDisplayProps) => {
+interface SimpleMapDisplayProps {
+  center: [number, number];
+  locations: Location[];
+  selectedEventId: string;
+}
+
+const SimpleMapDisplay = ({ center, locations, selectedEventId }: SimpleMapDisplayProps) => {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef<L.Marker[]>([]);
   const [isMapReady, setIsMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -29,17 +39,12 @@ const SimpleMapDisplay = ({ latitude, longitude, name, height = "300px" }: Simpl
 
     try {
       // Initialize map
-      const map = L.map(mapContainerRef.current).setView([latitude, longitude], 15);
+      const map = L.map(mapContainerRef.current).setView(center, 13);
       
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
-
-      // Add marker
-      L.marker([latitude, longitude])
-        .addTo(map)
-        .bindPopup(`<strong>${name}</strong>`);
 
       mapRef.current = map;
       setIsMapReady(true);
@@ -56,11 +61,50 @@ const SimpleMapDisplay = ({ latitude, longitude, name, height = "300px" }: Simpl
         mapRef.current = null;
       }
     };
-  }, [latitude, longitude, name]);
+  }, []);
+
+  // Update map center when it changes
+  useEffect(() => {
+    if (mapRef.current && isMapReady) {
+      mapRef.current.setView(center, 13);
+    }
+  }, [center, isMapReady]);
+
+  // Update markers when locations change
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      mapRef.current?.removeLayer(marker);
+    });
+    markersRef.current = [];
+
+    // Filter locations
+    const filteredLocations = locations.filter(
+      location => location.id === selectedEventId || location.type !== 'venue'
+    );
+
+    // Add new markers
+    filteredLocations.forEach((location) => {
+      const marker = L.marker([location.latitude, location.longitude])
+        .addTo(mapRef.current!)
+        .bindPopup(`
+          <div style="min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; font-weight: 600;">${location.name}</h3>
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${location.address}</p>
+            ${location.description ? `<p style="margin: 0; font-size: 14px; color: #666;">${location.description}</p>` : ''}
+          </div>
+        `);
+      
+      markersRef.current.push(marker);
+    });
+
+  }, [locations, selectedEventId, isMapReady]);
 
   if (mapError) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg border-2 border-dashed border-muted" style={{ height }}>
+      <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-lg border-2 border-dashed border-muted">
         <div className="text-center p-6">
           <div className="mb-4 text-muted-foreground">
             <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +128,7 @@ const SimpleMapDisplay = ({ latitude, longitude, name, height = "300px" }: Simpl
   }
 
   return (
-    <div className="h-full w-full relative" style={{ height }}>
+    <div className="h-full w-full relative">
       {!isMapReady && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 rounded-lg">
           <div className="text-center">
@@ -97,7 +141,7 @@ const SimpleMapDisplay = ({ latitude, longitude, name, height = "300px" }: Simpl
       <div
         ref={mapContainerRef}
         className="h-full w-full rounded-lg"
-        style={{ height }}
+        style={{ height: '100%', width: '100%' }}
       />
     </div>
   );

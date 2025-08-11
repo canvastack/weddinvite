@@ -24,7 +24,7 @@ import ThemeManagement from '@/pages/admin/ThemeManagement';
 
 // Admin components
 import EmailBlastManager from '@/components/admin/EmailBlastManager';
-import MapManager from '@/components/admin/MapManager';
+import { MapManager } from '@/components/admin/MapManager';
 
 const queryClient = new QueryClient();
 
