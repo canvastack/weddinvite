@@ -19,6 +19,8 @@ import {
   CalendarIcon
 } from '@heroicons/react/24/outline';
 
+type CampaignStatus = 'draft' | 'scheduled' | 'sent' | 'failed';
+
 interface EmailCampaign {
   id: string;
   name: string;
@@ -26,7 +28,7 @@ interface EmailCampaign {
   content: string;
   templateId?: string;
   recipients: string[];
-  status: 'draft' | 'scheduled' | 'sent' | 'failed';
+  status: CampaignStatus;
   scheduledDate?: string;
   sentDate?: string;
   openRate?: number;
@@ -65,11 +67,11 @@ const EmailCampaignManager = () => {
     content: '',
     templateId: '',
     recipients: ['all_guests'],
-    status: 'draft' as const,
+    status: 'draft' as CampaignStatus,
     scheduledDate: ''
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: CampaignStatus) => {
     switch (status) {
       case 'sent':
         return <Badge variant="default">Terkirim</Badge>;
@@ -167,7 +169,7 @@ const EmailCampaignManager = () => {
       c.id === campaignId 
         ? { 
             ...c, 
-            status: 'sent' as const, 
+            status: 'sent' as CampaignStatus, 
             sentDate: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -312,7 +314,7 @@ const EmailCampaignManager = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select 
                   value={formData.status} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}
+                  onValueChange={(value: CampaignStatus) => setFormData(prev => ({ ...prev, status: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

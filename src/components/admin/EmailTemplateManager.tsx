@@ -17,12 +17,14 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
+type TemplateType = 'invitation' | 'reminder' | 'thank_you' | 'rsvp' | 'custom';
+
 interface EmailTemplate {
   id: string;
   name: string;
   subject: string;
   content: string;
-  type: 'invitation' | 'reminder' | 'thank_you' | 'rsvp' | 'custom';
+  type: TemplateType;
   isDefault: boolean;
   variables: string[];
   created_at: string;
@@ -96,12 +98,12 @@ const EmailTemplateManager = () => {
     name: '',
     subject: '',
     content: '',
-    type: 'custom' as const,
+    type: 'custom' as TemplateType,
     isDefault: false,
     variables: [] as string[]
   });
 
-  const getTypeBadge = (type: string) => {
+  const getTypeBadge = (type: TemplateType) => {
     switch (type) {
       case 'invitation':
         return <Badge variant="default">Undangan</Badge>;
