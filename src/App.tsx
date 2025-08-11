@@ -3,7 +3,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { ThemeWrapper } from '@/components/ThemeWrapper';
 import { AuthProvider } from '@/components/AuthProvider';
 
 // Public pages
@@ -34,41 +33,39 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeWrapper>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-background">
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Index />} />
-                
-                {/* Admin routes */}
-                <Route path="/admin/login" element={<Login />} />
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="guests" element={<GuestManagement />} />
-                  <Route path="events" element={<EventManagementFixed />} />
-                  <Route path="analytics" element={<Analytics />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="users" element={<UserManagementFixed />} />
-                  <Route path="hero" element={<HeroManagement />} />
-                  <Route path="theme" element={<ThemeManagement />} />
-                  <Route path="couple" element={<CoupleManagement />} />
-                  <Route path="love-story" element={<LoveStoryManagement />} />
-                  <Route path="content" element={<ContentManagement />} />
-                  <Route path="email" element={<EmailBlastManager />} />
-                  <Route path="map" element={<MapManager />} />
-                </Route>
-                
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-            </div>
-          </Router>
-        </AuthProvider>
-      </ThemeWrapper>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              
+              {/* Admin routes */}
+              <Route path="/admin/login" element={<Login />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="guests" element={<GuestManagement />} />
+                <Route path="events" element={<EventManagementFixed />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="users" element={<UserManagementFixed />} />
+                <Route path="hero" element={<HeroManagement />} />
+                <Route path="theme" element={<ThemeManagement />} />
+                <Route path="couple" element={<CoupleManagement />} />
+                <Route path="love-story" element={<LoveStoryManagement />} />
+                <Route path="content" element={<ContentManagement />} />
+                <Route path="email" element={<EmailBlastManager />} />
+                <Route path="map" element={<MapManager />} />
+              </Route>
+              
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

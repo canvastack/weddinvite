@@ -1,11 +1,11 @@
 
 import React from 'react';
-import ThemeManager from './ThemeManager';
+import ThemeEditor from '@/components/admin/ThemeEditor';
 
 const ThemeManagement = () => {
   return (
     <div className="container mx-auto py-6">
-      <ThemeManager />
+      <ThemeEditor />
     </div>
   );
 };

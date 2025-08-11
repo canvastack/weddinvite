@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '@/context/ThemeContext';
+import { useThemeManager } from '@/hooks/useThemeManager';
 
 interface ThemeWrapperProps {
   children: React.ReactNode;
@@ -7,10 +7,10 @@ interface ThemeWrapperProps {
 }
 
 export const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ children, className = '' }) => {
-  const { currentTheme, isDefaultMode } = useTheme();
+  const { currentTheme, isDefaultMode } = useThemeManager();
 
   // In default mode, render children without any theme modifications
-  if (isDefaultMode || currentTheme.is_default) {
+  if (isDefaultMode || currentTheme.isDefault) {
     return (
       <div className={className}>
         {children}
@@ -23,20 +23,20 @@ export const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ children, className 
     <div 
       className={`${className} theme-${currentTheme.id}`}
       style={{
-        '--dynamic-primary': currentTheme.primary_color,
-        '--dynamic-primary-glow': currentTheme.primary_glow,
-        '--dynamic-secondary': currentTheme.secondary_color,
-        '--dynamic-accent': currentTheme.accent_color,
-        '--dynamic-rose-gold': currentTheme.rose_gold,
-        '--dynamic-background': currentTheme.background_color,
-        '--dynamic-card': currentTheme.card_color,
-        '--dynamic-text': currentTheme.text_color,
-        '--dynamic-muted': currentTheme.muted_color,
-        '--dynamic-border': currentTheme.border_color,
-        '--dynamic-font-family': currentTheme.font_family,
-        '--dynamic-font-size': currentTheme.font_size,
-        '--dynamic-radius': currentTheme.border_radius,
-        '--dynamic-spacing': currentTheme.spacing,
+        '--dynamic-primary': currentTheme.colors.primary,
+        '--dynamic-primary-glow': currentTheme.colors.primaryGlow,
+        '--dynamic-secondary': currentTheme.colors.secondary,
+        '--dynamic-accent': currentTheme.colors.accent,
+        '--dynamic-rose-gold': currentTheme.colors.roseGold,
+        '--dynamic-background': currentTheme.colors.background,
+        '--dynamic-card': currentTheme.colors.card,
+        '--dynamic-text': currentTheme.colors.text,
+        '--dynamic-muted': currentTheme.colors.muted,
+        '--dynamic-border': currentTheme.colors.border,
+        '--dynamic-font-family': currentTheme.typography.fontFamily,
+        '--dynamic-font-size': currentTheme.typography.fontSize,
+        '--dynamic-radius': currentTheme.layout.borderRadius,
+        '--dynamic-spacing': currentTheme.layout.spacing,
       } as React.CSSProperties}
     >
       {children}

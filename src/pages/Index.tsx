@@ -6,6 +6,7 @@ import { WeddingDetails } from '@/components/WeddingDetails';
 import { RSVPSection } from '@/components/RSVPSection';
 import { Footer } from '@/components/Footer';
 import { ThemeWrapper } from '@/components/ThemeWrapper';
+import { ScrollToTop } from '@/components/ScrollToTop';
 
 const Index = () => {
   return (
@@ -34,6 +35,7 @@ const Index = () => {
       </main>
       
       <Footer />
+      <ScrollToTop />
     </ThemeWrapper>
   );
 };

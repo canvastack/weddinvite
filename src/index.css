@@ -423,6 +423,34 @@
     transition: var(--transition-smooth);
   }
 
+  /* Enhanced scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Scroll to top button animations */
+  .scroll-to-top-enter {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+
+  .scroll-to-top-enter-active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-to-top-exit {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .scroll-to-top-exit-active {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   /* Ensure selects have proper z-index in all contexts */
   [role="listbox"],
   [role="combobox"] {
