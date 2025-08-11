@@ -9,86 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { EnvelopeIcon, PaperAirplaneIcon, UsersIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
-import { useToast } from '@/hooks/use-toast';
-
-interface EmailTemplate {
-  id: string;
-  name: string;
-  subject: string;
-  content: string;
-  type: 'invitation' | 'reminder' | 'thank_you' | 'custom';
-}
-
-interface EmailCampaign {
-  id: string;
-  name: string;
-  template: EmailTemplate;
-  recipients: number;
-  sent: number;
-  status: 'draft' | 'sending' | 'sent' | 'failed';
-  createdAt: string;
-  sentAt?: string;
-}
-
-const mockTemplates: EmailTemplate[] = [
-  {
-    id: '1',
-    name: 'Undangan Pernikahan',
-    subject: 'Undangan Pernikahan Dhika & Sari',
-    content: 'Dengan penuh rasa syukur, kami mengundang Anda untuk hadir di hari bahagia kami...',
-    type: 'invitation'
-  },
-  {
-    id: '2', 
-    name: 'Reminder RSVP',
-    subject: 'Reminder: Konfirmasi Kehadiran',
-    content: 'Halo! Jangan lupa untuk mengkonfirmasi kehadiran Anda di pernikahan kami...',
-    type: 'reminder'
-  },
-  {
-    id: '3',
-    name: 'Terima Kasih',
-    subject: 'Terima Kasih atas Kehadiran Anda',
-    content: 'Terima kasih telah hadir dan memberikan doa terbaik untuk pernikahan kami...',
-    type: 'thank_you'
-  }
-];
-
-const mockCampaigns: EmailCampaign[] = [
-  {
-    id: '1',
-    name: 'Undangan Utama',
-    template: mockTemplates[0],
-    recipients: 150,
-    sent: 150,
-    status: 'sent',
-    createdAt: '2024-01-15',
-    sentAt: '2024-01-15'
-  },
-  {
-    id: '2',
-    name: 'Reminder RSVP Batch 1',
-    template: mockTemplates[1],
-    recipients: 45,
-    sent: 45,
-    status: 'sent',
-    createdAt: '2024-01-20',
-    sentAt: '2024-01-20'
-  },
-  {
-    id: '3',
-    name: 'Thank You Message',
-    template: mockTemplates[2],
-    recipients: 120,
-    sent: 0,
-    status: 'draft',
-    createdAt: '2024-01-25'
-  }
-];
+import { useEmailCampaigns, EmailTemplate } from '@/hooks/useEmailCampaigns';
 
 export const EmailBlastManager = () => {
   const [activeTab, setActiveTab] = useState<'campaigns' | 'templates' | 'create'>('campaigns');
-  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     templateId: '',
@@ -98,42 +22,47 @@ export const EmailBlastManager = () => {
     name: '',
     subject: '',
     content: '',
-    type: 'custom' as EmailTemplate['type']
+    type: 'custom' as EmailTemplate['template_type']
   });
-  const { toast } = useToast();
 
-  const handleSendCampaign = (campaignId: string) => {
-    toast({
-      title: "Email Campaign Terkirim!",
-      description: "Email blast berhasil dikirim ke semua penerima.",
-    });
+  const {
+    campaigns,
+    templates,
+    isLoading,
+    createCampaign,
+    sendCampaign,
+    createTemplate,
+    getEmailStats
+  } = useEmailCampaigns();
+
+  const stats = getEmailStats();
+
+  const handleSendCampaign = async (campaignId: string) => {
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (campaign) {
+      await sendCampaign(campaignId, campaign.template_id, campaign.recipient_group);
+    }
   };
 
-  const handleCreateCampaign = () => {
-    toast({
-      title: "Campaign Berhasil Dibuat!",
-      description: "Campaign email baru telah dibuat dan siap dikirim.",
-    });
+  const handleCreateCampaign = async () => {
+    await createCampaign(newCampaign);
     setNewCampaign({ name: '', templateId: '', recipientGroup: 'all' });
     setActiveTab('campaigns');
   };
 
-  const handleSaveTemplate = () => {
-    toast({
-      title: "Template Tersimpan!",
-      description: "Template email berhasil disimpan.",
-    });
+  const handleSaveTemplate = async () => {
+    await createTemplate(newTemplate);
     setNewTemplate({ name: '', subject: '', content: '', type: 'custom' });
   };
 
-  const getStatusBadge = (status: EmailCampaign['status']) => {
+  const getStatusBadge = (status: string) => {
     const variants = {
       draft: { variant: 'secondary' as const, label: 'Draft', icon: ClockIcon },
       sending: { variant: 'default' as const, label: 'Mengirim', icon: PaperAirplaneIcon },
       sent: { variant: 'default' as const, label: 'Terkirim', icon: CheckCircleIcon },
       failed: { variant: 'destructive' as const, label: 'Gagal', icon: ClockIcon }
     };
-    const config = variants[status];
+    const config = variants[status as keyof typeof variants];
     const IconComponent = config.icon;
     
     return (
@@ -142,6 +71,17 @@ export const EmailBlastManager = () => {
         {config.label}
       </Badge>
     );
+  };
+
+  const getRecipientGroupLabel = (group: string) => {
+    const labels = {
+      all: 'Semua Tamu',
+      confirmed: 'Yang Sudah Konfirmasi',
+      pending: 'Yang Belum Konfirmasi',
+      family: 'Keluarga',
+      friends: 'Teman'
+    };
+    return labels[group as keyof typeof labels] || group;
   };
 
   return (
@@ -190,7 +130,7 @@ export const EmailBlastManager = () => {
                     <PaperAirplaneIcon className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">3</p>
+                    <p className="text-2xl font-bold">{stats.totalCampaigns}</p>
                     <p className="text-sm text-muted-foreground">Total Campaigns</p>
                   </div>
                 </div>
@@ -204,7 +144,7 @@ export const EmailBlastManager = () => {
                     <CheckCircleIcon className="h-6 w-6 text-green-500" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">195</p>
+                    <p className="text-2xl font-bold">{stats.totalSent}</p>
                     <p className="text-sm text-muted-foreground">Email Terkirim</p>
                   </div>
                 </div>
@@ -218,8 +158,8 @@ export const EmailBlastManager = () => {
                     <UsersIcon className="h-6 w-6 text-blue-500" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">150</p>
-                    <p className="text-sm text-muted-foreground">Total Penerima</p>
+                    <p className="text-2xl font-bold">{templates.length}</p>
+                    <p className="text-sm text-muted-foreground">Templates Aktif</p>
                   </div>
                 </div>
               </CardContent>
@@ -235,28 +175,39 @@ export const EmailBlastManager = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockCampaigns.map((campaign) => (
+                {campaigns.map((campaign) => (
                   <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
                         <h3 className="font-medium">{campaign.name}</h3>
                         {getStatusBadge(campaign.status)}
                       </div>
-                      <p className="text-sm text-muted-foreground">{campaign.template.subject}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Template: {campaign.email_templates?.name || 'N/A'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Target: {getRecipientGroupLabel(campaign.recipient_group)}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        Dibuat: {new Date(campaign.createdAt).toLocaleDateString('id-ID')}
-                        {campaign.sentAt && ` • Dikirim: ${new Date(campaign.sentAt).toLocaleDateString('id-ID')}`}
+                        Dibuat: {new Date(campaign.created_at).toLocaleDateString('id-ID')}
+                        {campaign.sent_at && ` • Dikirim: ${new Date(campaign.sent_at).toLocaleDateString('id-ID')}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium">{campaign.sent}/{campaign.recipients}</p>
+                        <p className="text-sm font-medium">
+                          {campaign.sent_count || 0}/{campaign.total_recipients || 0}
+                        </p>
                         <p className="text-xs text-muted-foreground">terkirim</p>
+                        {campaign.failed_count > 0 && (
+                          <p className="text-xs text-red-500">{campaign.failed_count} gagal</p>
+                        )}
                       </div>
                       {campaign.status === 'draft' && (
                         <Button 
                           size="sm" 
                           onClick={() => handleSendCampaign(campaign.id)}
+                          disabled={isLoading}
                           className="bg-primary hover:bg-primary/90"
                         >
                           <PaperAirplaneIcon className="h-4 w-4 mr-1" />
@@ -266,6 +217,11 @@ export const EmailBlastManager = () => {
                     </div>
                   </div>
                 ))}
+                {campaigns.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Belum ada campaign. Buat campaign pertama Anda!
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -283,17 +239,17 @@ export const EmailBlastManager = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockTemplates.map((template) => (
+              {templates.map((template) => (
                 <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium">{template.name}</h3>
-                        <Badge variant="outline">{template.type}</Badge>
+                        <Badge variant="outline">{template.template_type}</Badge>
                       </div>
                       <p className="text-sm font-medium">{template.subject}</p>
                       <p className="text-xs text-muted-foreground line-clamp-2">
-                        {template.content}
+                        {template.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
                       </p>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" className="flex-1">
@@ -307,6 +263,11 @@ export const EmailBlastManager = () => {
                   </CardContent>
                 </Card>
               ))}
+              {templates.length === 0 && (
+                <p className="col-span-full text-center text-muted-foreground py-8">
+                  Belum ada template. Buat template pertama Anda!
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -344,7 +305,7 @@ export const EmailBlastManager = () => {
                     <SelectValue placeholder="Pilih template email" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockTemplates.map((template) => (
+                    {templates.map((template) => (
                       <SelectItem key={template.id} value={template.id}>
                         {template.name}
                       </SelectItem>
@@ -363,11 +324,11 @@ export const EmailBlastManager = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Semua Tamu (150 orang)</SelectItem>
-                    <SelectItem value="confirmed">Yang Sudah Konfirmasi (85 orang)</SelectItem>
-                    <SelectItem value="pending">Yang Belum Konfirmasi (65 orang)</SelectItem>
-                    <SelectItem value="family">Keluarga (25 orang)</SelectItem>
-                    <SelectItem value="friends">Teman (75 orang)</SelectItem>
+                    <SelectItem value="all">Semua Tamu</SelectItem>
+                    <SelectItem value="confirmed">Yang Sudah Konfirmasi</SelectItem>
+                    <SelectItem value="pending">Yang Belum Konfirmasi</SelectItem>
+                    <SelectItem value="family">Keluarga</SelectItem>
+                    <SelectItem value="friends">Teman</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -377,7 +338,7 @@ export const EmailBlastManager = () => {
               <Button 
                 onClick={handleCreateCampaign} 
                 className="w-full"
-                disabled={!newCampaign.name || !newCampaign.templateId}
+                disabled={!newCampaign.name || !newCampaign.templateId || isLoading}
               >
                 <PaperAirplaneIcon className="h-4 w-4 mr-2" />
                 Buat Campaign
@@ -418,7 +379,7 @@ export const EmailBlastManager = () => {
                 <Label>Tipe Template</Label>
                 <Select 
                   value={newTemplate.type} 
-                  onValueChange={(value: EmailTemplate['type']) => setNewTemplate(prev => ({ ...prev, type: value }))}
+                  onValueChange={(value: EmailTemplate['template_type']) => setNewTemplate(prev => ({ ...prev, type: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -436,7 +397,7 @@ export const EmailBlastManager = () => {
                 <Label htmlFor="templateContent">Isi Email</Label>
                 <Textarea
                   id="templateContent"
-                  placeholder="Tulis isi email..."
+                  placeholder="Tulis isi email... Gunakan {{name}} untuk nama tamu"
                   rows={6}
                   value={newTemplate.content}
                   onChange={(e) => setNewTemplate(prev => ({ ...prev, content: e.target.value }))}
@@ -447,7 +408,7 @@ export const EmailBlastManager = () => {
                 onClick={handleSaveTemplate} 
                 variant="outline" 
                 className="w-full"
-                disabled={!newTemplate.name || !newTemplate.subject || !newTemplate.content}
+                disabled={!newTemplate.name || !newTemplate.subject || !newTemplate.content || isLoading}
               >
                 Simpan Template
               </Button>
