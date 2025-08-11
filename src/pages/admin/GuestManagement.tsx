@@ -30,6 +30,7 @@ const GuestManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   
+  // Use the custom hook for guest management
   const { 
     guests, 
     isLoading, 
@@ -39,58 +40,39 @@ const GuestManagement = () => {
     getGuestById 
   } = useGuests();
 
-  // Handle URL params for direct navigation - Fixed to clear params when closing
+  // Handle URL params for direct navigation
   useEffect(() => {
     const viewId = searchParams.get('view');
     const editId = searchParams.get('edit');
     
-    if (viewId && !viewingGuest) {
+    if (viewId) {
       const guest = getGuestById(viewId);
       if (guest) {
         setViewingGuest(guest);
       }
     }
     
-    if (editId && !editingGuest) {
+    if (editId) {
       const guest = getGuestById(editId);
       if (guest) {
         setEditingGuest(guest);
         setIsDialogOpen(true);
       }
     }
-  }, [searchParams, getGuestById, viewingGuest, editingGuest]);
+  }, [searchParams, getGuestById]);
 
   const handleAddGuest = () => {
     setEditingGuest(null);
     setIsDialogOpen(true);
-    // Clear URL params
-    setSearchParams({});
   };
 
   const handleEditGuest = (guest: Guest) => {
     setEditingGuest(guest);
     setIsDialogOpen(true);
-    // Update URL params
-    setSearchParams({ edit: guest.id });
   };
 
   const handleViewGuest = (guest: Guest) => {
     setViewingGuest(guest);
-    // Update URL params
-    setSearchParams({ view: guest.id });
-  };
-
-  const handleCloseViewGuest = () => {
-    setViewingGuest(null);
-    // Clear URL params
-    setSearchParams({});
-  };
-
-  const handleCloseEditDialog = () => {
-    setIsDialogOpen(false);
-    setEditingGuest(null);
-    // Clear URL params
-    setSearchParams({});
   };
 
   const handleDeleteGuest = async (guestId: string) => {
@@ -137,7 +119,9 @@ const GuestManagement = () => {
         await addGuest(guestData);
       }
 
-      handleCloseEditDialog();
+      setIsDialogOpen(false);
+      setEditingGuest(null);
+      setSearchParams({}); // Clear URL params
     } catch (error) {
       // Error handling is done in the hook
     }
@@ -178,7 +162,7 @@ const GuestManagement = () => {
           <h1 className="text-3xl font-bold text-gradient">Manajemen Tamu</h1>
           <p className="text-muted-foreground">Kelola daftar tamu undangan pernikahan</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={handleCloseEditDialog}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="premium" onClick={handleAddGuest} className="smoke-effect">
               <PlusIcon className="h-4 w-4 mr-2" />
@@ -203,8 +187,6 @@ const GuestManagement = () => {
                     name="name"
                     defaultValue={editingGuest?.name}
                     placeholder="Masukkan nama lengkap"
-                    pattern="[A-Za-z\s]+"
-                    title="Hanya huruf dan spasi yang diperbolehkan"
                     required
                   />
                 </div>
@@ -226,25 +208,24 @@ const GuestManagement = () => {
                   <Input
                     id="phone"
                     name="phone"
-                    type="tel"
                     defaultValue={editingGuest?.phone}
                     placeholder="+62 812-3456-7890"
-                    pattern="[\+]?[0-9\s\-]+"
-                    title="Hanya angka, spasi, tanda + dan - yang diperbolehkan"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="guest_count">Jumlah Tamu *</Label>
-                  <Input
-                    id="guest_count"
-                    name="guest_count"
-                    type="number"
-                    min="1"
-                    max="10"
-                    defaultValue={editingGuest?.guest_count || 1}
-                    placeholder="1"
-                    required
-                  />
+                  <Select name="guest_count" defaultValue={editingGuest?.guest_count.toString() || '1'}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jumlah" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Orang</SelectItem>
+                      <SelectItem value="2">2 Orang</SelectItem>
+                      <SelectItem value="3">3 Orang</SelectItem>
+                      <SelectItem value="4">4 Orang</SelectItem>
+                      <SelectItem value="5">5+ Orang</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -267,8 +248,6 @@ const GuestManagement = () => {
                     name="city"
                     defaultValue={editingGuest?.city}
                     placeholder="Nama kota"
-                    pattern="[A-Za-z\s]+"
-                    title="Hanya huruf dan spasi yang diperbolehkan"
                   />
                 </div>
                 <div className="space-y-2">
@@ -278,23 +257,8 @@ const GuestManagement = () => {
                     name="province"
                     defaultValue={editingGuest?.province}
                     placeholder="Nama provinsi"
-                    pattern="[A-Za-z\s]+"
-                    title="Hanya huruf dan spasi yang diperbolehkan"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="postal_code">Kode Pos</Label>
-                <Input
-                  id="postal_code"
-                  name="postal_code"
-                  type="text"
-                  defaultValue={editingGuest?.postal_code}
-                  placeholder="12345"
-                  pattern="[0-9]{5}"
-                  title="Kode pos harus 5 digit angka"
-                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -339,7 +303,7 @@ const GuestManagement = () => {
               </div>
 
               <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={handleCloseEditDialog}>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Batal
                 </Button>
                 <Button type="submit" variant="premium">
@@ -473,11 +437,11 @@ const GuestManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Guest Detail View Modal - Fixed close handler */}
+      {/* Guest Detail View Modal */}
       <GuestDetailView
         guest={viewingGuest}
         isOpen={!!viewingGuest}
-        onClose={handleCloseViewGuest}
+        onClose={() => setViewingGuest(null)}
       />
     </div>
   );
