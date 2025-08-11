@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowPathIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import EventLocationPicker from './EventLocationPicker';
+import { reverseGeocode } from '@/utils/geocoding';
 
 interface EventData {
   title: string;
@@ -57,14 +58,32 @@ const EventFormWithMap = ({ initialData, onSubmit, onCancel }: EventFormWithMapP
     contact_phone: initialData?.contact_phone || ''
   });
 
-  const handleLocationChange = (lat: number, lng: number) => {
+  const handleLocationChange = async (lat: number, lng: number) => {
+    // Set coordinates first
     setEventData(prev => ({
       ...prev,
       venue_latitude: lat,
       venue_longitude: lng
     }));
-  };
 
+    // Try to auto-fill venue details from reverse geocoding
+    try {
+      const info = await reverseGeocode(lat, lng);
+      if (info) {
+        setEventData(prev => ({
+          ...prev,
+          venue_latitude: lat,
+          venue_longitude: lng,
+          venue_name: prev.venue_name || info.name,
+          venue_address: info.address,
+          venue_city: info.city || prev.venue_city,
+          venue_province: info.province || prev.venue_province,
+        }));
+      }
+    } catch (err) {
+      // Silent fail, user can edit manually
+    }
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
