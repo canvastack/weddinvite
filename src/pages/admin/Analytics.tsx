@@ -14,8 +14,8 @@ import {
   CalendarIcon,
   ClockIcon,
   ArrowPathIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon
+  TrendingUpIcon,
+  TrendingDownIcon
 } from '@heroicons/react/24/outline';
 import { RefreshCw, Users, Calendar, Mail, MapPin } from 'lucide-react';
 
@@ -169,7 +169,7 @@ const Analytics = () => {
           <CardContent>
             <div className="text-2xl font-bold">{guestStats.total}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <ArrowTrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
+              <TrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
               +{guestGrowth}% from last week
             </div>
           </CardContent>
@@ -196,7 +196,7 @@ const Analytics = () => {
           <CardContent>
             <div className="text-2xl font-bold">{responseRate}%</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <ArrowTrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
+              <TrendingUpIcon className="h-3 w-3 mr-1 text-green-500" />
               +{responseGrowth}% improvement
             </div>
           </CardContent>
