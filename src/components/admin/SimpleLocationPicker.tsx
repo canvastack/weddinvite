@@ -61,8 +61,8 @@ const SimpleLocationPicker = ({ initialPosition, onLocationSelect, onClose }: Si
         },
         {
           enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
+          timeout: 10000,
+          maximumAge: 60000
         }
       );
     } else {
