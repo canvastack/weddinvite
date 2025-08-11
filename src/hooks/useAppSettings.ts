@@ -105,14 +105,16 @@ export const useAppSettings = () => {
     setIsSaving(true);
     
     try {
-      // Apply theme changes
+      // Apply theme changes immediately
       if (settings.appearance.theme) {
         document.documentElement.setAttribute('data-theme', settings.appearance.theme);
+        document.body.className = `theme-${settings.appearance.theme}`;
       }
       
       // Apply primary color
       if (settings.appearance.primaryColor) {
         document.documentElement.style.setProperty('--primary', settings.appearance.primaryColor);
+        document.documentElement.style.setProperty('--primary-hsl', hexToHsl(settings.appearance.primaryColor));
       }
       
       // Apply custom CSS
@@ -130,8 +132,19 @@ export const useAppSettings = () => {
       // Apply maintenance mode
       if (settings.general.maintenanceMode) {
         localStorage.setItem('maintenance-mode', 'true');
+        document.body.classList.add('maintenance-mode');
       } else {
         localStorage.removeItem('maintenance-mode');
+        document.body.classList.remove('maintenance-mode');
+      }
+      
+      // Apply site title
+      document.title = settings.general.siteName;
+      
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', settings.general.siteDescription);
       }
       
       // Simulate API call delay
@@ -189,17 +202,61 @@ export const useAppSettings = () => {
     }
   }, [settings.notifications.emailNotifications, toast]);
 
-  // Apply settings on load
+  // Helper function to convert hex to HSL
+  const hexToHsl = (hex: string): string => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  // Apply settings on load and changes
   useEffect(() => {
     if (settings.appearance.theme) {
       document.documentElement.setAttribute('data-theme', settings.appearance.theme);
+      document.body.className = `theme-${settings.appearance.theme}`;
     }
     
     if (settings.appearance.primaryColor) {
       document.documentElement.style.setProperty('--primary', settings.appearance.primaryColor);
+      document.documentElement.style.setProperty('--primary-hsl', hexToHsl(settings.appearance.primaryColor));
+    }
+    
+    if (settings.appearance.customCSS) {
+      let customStyleElement = document.getElementById('custom-css');
+      if (!customStyleElement) {
+        customStyleElement = document.createElement('style');
+        customStyleElement.id = 'custom-css';
+        document.head.appendChild(customStyleElement);
+      }
+      customStyleElement.textContent = settings.appearance.customCSS;
     }
     
     document.documentElement.lang = settings.general.language;
+    document.title = settings.general.siteName;
+    
+    if (settings.general.maintenanceMode) {
+      document.body.classList.add('maintenance-mode');
+    } else {
+      document.body.classList.remove('maintenance-mode');
+    }
   }, [settings]);
 
   return {

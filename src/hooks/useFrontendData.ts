@@ -20,6 +20,8 @@ export interface FrontendData {
     groomDescription: string;
     brideImage: string;
     groomImage: string;
+    loveStory: string;
+    meetingDate: string;
   };
   eventSection: {
     isVisible: boolean;
@@ -31,6 +33,9 @@ export interface FrontendData {
       venue: string;
       address: string;
       type: 'akad' | 'resepsi';
+      description?: string;
+      latitude?: number;
+      longitude?: number;
     }>;
   };
   rsvpSection: {
@@ -38,10 +43,54 @@ export interface FrontendData {
     isEnabled: boolean;
     deadline: string;
     message: string;
+    maxGuests: number;
+    allowPlusOnes: boolean;
   };
   gallerySection: {
     isVisible: boolean;
     images: string[];
+    title: string;
+    description: string;
+  };
+  importantInfoSection: {
+    isVisible: boolean;
+    title: string;
+    items: Array<{
+      id: string;
+      title: string;
+      description: string;
+      icon: string;
+    }>;
+  };
+  helpSection: {
+    isVisible: boolean;
+    title: string;
+    description: string;
+    contactPhone: string;
+    contactEmail: string;
+    contactPerson: string;
+  };
+  thankYouSection: {
+    isVisible: boolean;
+    title: string;
+    message: string;
+    brideName: string;
+    groomName: string;
+    socialMedia: {
+      instagram: string;
+      facebook: string;
+      twitter: string;
+    };
+  };
+  footerSection: {
+    isVisible: boolean;
+    copyrightText: string;
+    designerCredit: string;
+    additionalLinks: Array<{
+      id: string;
+      title: string;
+      url: string;
+    }>;
   };
 }
 
@@ -62,6 +111,8 @@ const defaultFrontendData: FrontendData = {
     groomDescription: 'Putra dari Bapak & Ibu',
     brideImage: '',
     groomImage: '',
+    loveStory: 'Kisah cinta kami dimulai...',
+    meetingDate: '2020-01-15',
   },
   eventSection: {
     isVisible: true,
@@ -74,6 +125,7 @@ const defaultFrontendData: FrontendData = {
         venue: 'Masjid Istiqlal',
         address: 'Jl. Taman Wijaya Kusuma, Jakarta Pusat',
         type: 'akad',
+        description: 'Prosesi akad nikah akan dilaksanakan di Masjid Istiqlal',
       },
       {
         id: '2',
@@ -83,6 +135,7 @@ const defaultFrontendData: FrontendData = {
         venue: 'Grand Ballroom Hotel',
         address: 'Jl. Asia Afrika No.8, Jakarta Pusat',
         type: 'resepsi',
+        description: 'Acara resepsi pernikahan untuk keluarga dan sahabat',
       },
     ],
   },
@@ -91,10 +144,75 @@ const defaultFrontendData: FrontendData = {
     isEnabled: true,
     deadline: '2024-06-01',
     message: 'Mohon konfirmasi kehadiran Anda sebelum tanggal yang ditentukan',
+    maxGuests: 4,
+    allowPlusOnes: true,
   },
   gallerySection: {
     isVisible: true,
     images: [],
+    title: 'Galeri Foto',
+    description: 'Momen-momen indah perjalanan cinta kami',
+  },
+  importantInfoSection: {
+    isVisible: true,
+    title: 'Informasi Penting',
+    items: [
+      {
+        id: '1',
+        title: 'Dress Code',
+        description: 'Formal/Semi Formal',
+        icon: '👗',
+      },
+      {
+        id: '2',
+        title: 'Parkir',
+        description: 'Tersedia parkir gratis',
+        icon: '🚗',
+      },
+      {
+        id: '3',
+        title: 'Protokol Kesehatan',
+        description: 'Harap mematuhi protokol kesehatan',
+        icon: '😷',
+      },
+    ],
+  },
+  helpSection: {
+    isVisible: true,
+    title: 'Butuh Bantuan?',
+    description: 'Jika ada pertanyaan, jangan ragu untuk menghubungi kami',
+    contactPhone: '+62 812-3456-7890',
+    contactEmail: 'wedding@example.com',
+    contactPerson: 'Wedding Organizer',
+  },
+  thankYouSection: {
+    isVisible: true,
+    title: 'Terima Kasih',
+    message: 'Terima kasih atas doa dan restu Anda. Kehadiran Anda sangat berarti bagi kami.',
+    brideName: 'Bride',
+    groomName: 'Groom',
+    socialMedia: {
+      instagram: '@weddingcouple',
+      facebook: 'Wedding Couple',
+      twitter: '@weddingcouple',
+    },
+  },
+  footerSection: {
+    isVisible: true,
+    copyrightText: '© 2024 Wedding Management System. All rights reserved.',
+    designerCredit: 'Designed with ❤️ by Wedding Team',
+    additionalLinks: [
+      {
+        id: '1',
+        title: 'Privacy Policy',
+        url: '/privacy',
+      },
+      {
+        id: '2',
+        title: 'Terms of Service',
+        url: '/terms',
+      },
+    ],
   },
 };
 
@@ -117,6 +235,11 @@ export const useFrontendData = () => {
           ...prev.heroSection,
           title: `${settings.wedding.brideName} & ${settings.wedding.groomName}`,
         },
+        thankYouSection: {
+          ...prev.thankYouSection,
+          brideName: settings.wedding.brideName,
+          groomName: settings.wedding.groomName,
+        },
       }));
     }
 
@@ -126,6 +249,8 @@ export const useFrontendData = () => {
         rsvpSection: {
           ...prev.rsvpSection,
           deadline: settings.wedding.rsvpDeadline,
+          maxGuests: settings.wedding.maxGuestsPerInvite,
+          allowPlusOnes: settings.wedding.allowPlusOnes,
         },
       }));
     }
@@ -151,10 +276,45 @@ export const useFrontendData = () => {
     }));
   };
 
+  const addEventToSection = (event: any) => {
+    setFrontendData(prev => ({
+      ...prev,
+      eventSection: {
+        ...prev.eventSection,
+        events: [...prev.eventSection.events, event],
+      },
+    }));
+  };
+
+  const removeEventFromSection = (eventId: string) => {
+    setFrontendData(prev => ({
+      ...prev,
+      eventSection: {
+        ...prev.eventSection,
+        events: prev.eventSection.events.filter(e => e.id !== eventId),
+      },
+    }));
+  };
+
+  const updateEventInSection = (eventId: string, eventData: any) => {
+    setFrontendData(prev => ({
+      ...prev,
+      eventSection: {
+        ...prev.eventSection,
+        events: prev.eventSection.events.map(e => 
+          e.id === eventId ? { ...e, ...eventData } : e
+        ),
+      },
+    }));
+  };
+
   return {
     frontendData,
     updateSection,
     toggleSectionVisibility,
+    addEventToSection,
+    removeEventFromSection,
+    updateEventInSection,
     setFrontendData,
   };
 };
