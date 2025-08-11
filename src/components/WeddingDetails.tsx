@@ -1,8 +1,40 @@
 
 import { Button } from '@/components/ui/button';
 import { CalendarIcon, ClockIcon, MapPinIcon, CameraIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { useWeddingContent } from '@/hooks/useWeddingContent';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 export const WeddingDetails = () => {
+  const { events, importantInfo, isLoading, error } = useWeddingContent();
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-background to-muted/20 relative overflow-hidden">
+        <div className="container mx-auto px-6 text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Memuat detail acara...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-background to-muted/20 relative overflow-hidden">
+        <div className="container mx-auto px-6 text-center">
+          <CalendarIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Filter and sort events for timeline display
+  const timelineEvents = events
+    .filter(event => event.show_on_timeline)
+    .sort((a, b) => a.display_order - b.display_order);
+
   return (
     <section className="py-20 bg-gradient-to-b from-background to-muted/20 relative overflow-hidden">
       {/* Animated Background */}
@@ -36,173 +68,169 @@ export const WeddingDetails = () => {
             
             {/* Timeline Items */}
             <div className="space-y-12">
-              {/* Akad Nikah */}
-              <div className="relative flex items-center fade-in-up">
-                <div className="flex-1 pr-8">
-                  <div className="elegant-card bg-card/95 backdrop-blur-sm rounded-3xl p-8 border border-primary/20 hover:border-primary/40 transition-all duration-500 group">
-                    <div className="flex items-center mb-6">
-                      <div className="w-16 h-16 bg-gradient-premium rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                        <CalendarIcon className="h-8 w-8 text-primary-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gradient mb-1">Akad Nikah</h3>
-                        <p className="text-muted-foreground">Ijab Qabul</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-lg">
-                        <CalendarIcon className="h-5 w-5 text-primary" />
-                        <span className="font-semibold">15 Februari 2025 - Sabtu</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-lg">
-                        <ClockIcon className="h-5 w-5 text-primary" />
-                        <span>08:00 - 10:00 WIB</span>
-                      </div>
-                      <div className="flex items-start gap-3 text-lg">
-                        <MapPinIcon className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                          <p className="font-semibold">Masjid Al-Ikhlas</p>
-                          <p className="text-muted-foreground text-sm">Jl. Melati No. 123, Jakarta Selatan</p>
+              {timelineEvents.map((event, index) => {
+                const isLeft = index % 2 === 0;
+                const colors = [
+                  { bg: 'bg-gradient-premium', border: 'border-primary/20 hover:border-primary/40', dot: 'bg-primary', icon: 'text-primary-foreground' },
+                  { bg: 'bg-gradient-elegant', border: 'border-rose-gold/20 hover:border-rose-gold/40', dot: 'bg-rose-gold', icon: 'text-white' },
+                  { bg: 'bg-accent/30', border: 'border-accent/20 hover:border-accent/40', dot: 'bg-accent', icon: 'text-foreground' }
+                ];
+                const colorSet = colors[index % colors.length];
+                
+                const eventDate = new Date(event.event_date);
+                const formattedDate = format(eventDate, 'd MMMM yyyy - EEEE', { locale: id });
+                
+                return (
+                  <div key={event.id} className={`relative flex items-center fade-in-up delay-${(index + 1) * 200}`}>
+                    {isLeft ? (
+                      <>
+                        <div className="flex-1 pr-8">
+                          <div className={`elegant-card bg-card/95 backdrop-blur-sm rounded-3xl p-8 border ${colorSet.border} transition-all duration-500 group`}>
+                            <div className="flex items-center mb-6">
+                              <div className={`w-16 h-16 ${colorSet.bg} rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
+                                <CalendarIcon className={`h-8 w-8 ${colorSet.icon}`} />
+                              </div>
+                              <div>
+                                <h3 className="text-2xl font-bold text-gradient mb-1">{event.title}</h3>
+                                <p className="text-muted-foreground">{event.description}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 text-lg">
+                                <CalendarIcon className="h-5 w-5 text-primary" />
+                                <span className="font-semibold">{formattedDate}</span>
+                              </div>
+                              <div className="flex items-center gap-3 text-lg">
+                                <ClockIcon className="h-5 w-5 text-primary" />
+                                <span>{event.start_time} - {event.end_time} WIB</span>
+                              </div>
+                              <div className="flex items-start gap-3 text-lg">
+                                <MapPinIcon className="h-5 w-5 text-primary mt-1" />
+                                <div>
+                                  <p className="font-semibold">{event.venue_name}</p>
+                                  <p className="text-muted-foreground text-sm">{event.venue_address}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Timeline Dot */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-primary rounded-full border-4 border-background shadow-glow floating z-10"></div>
-                
-                <div className="flex-1 pl-8"></div>
-              </div>
-
-              {/* Resepsi */}
-              <div className="relative flex items-center fade-in-up delay-200">
-                <div className="flex-1 pr-8"></div>
-                
-                {/* Timeline Dot */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-rose-gold rounded-full border-4 border-background shadow-elegant floating animation-delay-2000 z-10"></div>
-                
-                <div className="flex-1 pl-8">
-                  <div className="elegant-card bg-card/95 backdrop-blur-sm rounded-3xl p-8 border border-rose-gold/20 hover:border-rose-gold/40 transition-all duration-500 group">
-                    <div className="flex items-center mb-6">
-                      <div className="w-16 h-16 bg-gradient-elegant rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                        <CameraIcon className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gradient mb-1">Resepsi</h3>
-                        <p className="text-muted-foreground">Walimatul Ursy</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-lg">
-                        <CalendarIcon className="h-5 w-5 text-rose-gold" />
-                        <span className="font-semibold">15 Februari 2025 - Sabtu</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-lg">
-                        <ClockIcon className="h-5 w-5 text-rose-gold" />
-                        <span>18:00 - 22:00 WIB</span>
-                      </div>
-                      <div className="flex items-start gap-3 text-lg">
-                        <MapPinIcon className="h-5 w-5 text-rose-gold mt-1" />
-                        <div>
-                          <p className="font-semibold">The Grand Ballroom</p>
-                          <p className="text-muted-foreground text-sm">Hotel Premium Jakarta, Jl. Sudirman No. 45</p>
+                        <div className={`absolute left-1/2 transform -translate-x-1/2 w-6 h-6 ${colorSet.dot} rounded-full border-4 border-background shadow-glow floating z-10`}></div>
+                        <div className="flex-1 pl-8"></div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex-1 pr-8"></div>
+                        <div className={`absolute left-1/2 transform -translate-x-1/2 w-6 h-6 ${colorSet.dot} rounded-full border-4 border-background shadow-elegant floating animation-delay-2000 z-10`}></div>
+                        <div className="flex-1 pl-8">
+                          <div className={`elegant-card bg-card/95 backdrop-blur-sm rounded-3xl p-8 border ${colorSet.border} transition-all duration-500 group`}>
+                            <div className="flex items-center mb-6">
+                              <div className={`w-16 h-16 ${colorSet.bg} rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
+                                <CameraIcon className={`h-8 w-8 ${colorSet.icon}`} />
+                              </div>
+                              <div>
+                                <h3 className="text-2xl font-bold text-gradient mb-1">{event.title}</h3>
+                                <p className="text-muted-foreground">{event.description}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-3 text-lg">
+                                <CalendarIcon className="h-5 w-5 text-rose-gold" />
+                                <span className="font-semibold">{formattedDate}</span>
+                              </div>
+                              <div className="flex items-center gap-3 text-lg">
+                                <ClockIcon className="h-5 w-5 text-rose-gold" />
+                                <span>{event.start_time} - {event.end_time} WIB</span>
+                              </div>
+                              <div className="flex items-start gap-3 text-lg">
+                                <MapPinIcon className="h-5 w-5 text-rose-gold mt-1" />
+                                <div>
+                                  <p className="font-semibold">{event.venue_name}</p>
+                                  <p className="text-muted-foreground text-sm">{event.venue_address}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
-                </div>
-              </div>
-
-              {/* Photo Session */}
-              <div className="relative flex items-center fade-in-up delay-400">
-                <div className="flex-1 pr-8">
-                  <div className="elegant-card bg-card/95 backdrop-blur-sm rounded-3xl p-8 border border-accent/20 hover:border-accent/40 transition-all duration-500 group">
-                    <div className="flex items-center mb-6">
-                      <div className="w-16 h-16 bg-accent/30 rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                        <CameraIcon className="h-8 w-8 text-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gradient mb-1">Sesi Foto</h3>
-                        <p className="text-muted-foreground">Dokumentasi Kebahagiaan</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-lg">
-                        <ClockIcon className="h-5 w-5 text-foreground" />
-                        <span>Tersedia sepanjang acara</span>
-                      </div>
-                      <div className="flex items-start gap-3 text-lg">
-                        <HeartIcon className="h-5 w-5 text-foreground mt-1" />
-                        <div>
-                          <p className="font-semibold">Professional Photography</p>
-                          <p className="text-muted-foreground text-sm">Dokumentasi oleh fotografer profesional</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Timeline Dot */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-accent rounded-full border-4 border-background shadow-lg floating animation-delay-4000 z-10"></div>
-                
-                <div className="flex-1 pl-8"></div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="text-center space-x-4 fade-in-up delay-600">
-          <Button variant="premium" size="lg" className="smoke-effect shadow-glow">
-            <MapPinIcon className="h-5 w-5 mr-2" />
-            Lihat Lokasi Akad
-          </Button>
-          <Button variant="elegant" size="lg" className="smoke-effect shadow-glow">
-            <MapPinIcon className="h-5 w-5 mr-2" />
-            Lihat Lokasi Resepsi
-          </Button>
+          {timelineEvents.map((event, index) => (
+            <Button 
+              key={event.id}
+              variant={index % 2 === 0 ? "premium" : "elegant"} 
+              size="lg" 
+              className="smoke-effect shadow-glow"
+              onClick={() => {
+                if (event.venue_latitude && event.venue_longitude) {
+                  window.open(`https://www.google.com/maps?q=${event.venue_latitude},${event.venue_longitude}`, '_blank');
+                }
+              }}
+            >
+              <MapPinIcon className="h-5 w-5 mr-2" />
+              Lihat Lokasi {event.title}
+            </Button>
+          ))}
         </div>
 
         {/* Additional Info */}
-        <div className="mt-16 fade-in-up delay-800">
-          <div className="elegant-card bg-card/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 max-w-4xl mx-auto border border-primary/10">
-            <h3 className="text-2xl md:text-3xl font-bold text-gradient mb-8 text-center">
-              Informasi Penting
-            </h3>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <h4 className="font-semibold text-primary text-lg mb-3 flex items-center">
-                  <CalendarIcon className="h-5 w-5 mr-2" />
-                  Dress Code
-                </h4>
-                <p className="text-muted-foreground leading-relaxed">
-                  Kami mengundang Anda untuk mengenakan pakaian formal atau semi-formal 
-                  dengan nuansa warna cream, gold, atau earth tone yang elegan.
-                </p>
+        {importantInfo && importantInfo.is_visible && (
+          <div className="mt-16 fade-in-up delay-800">
+            <div className="elegant-card bg-card/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 max-w-4xl mx-auto border border-primary/10">
+              <h3 className="text-2xl md:text-3xl font-bold text-gradient mb-8 text-center">
+                {importantInfo.title}
+              </h3>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-primary text-lg mb-3 flex items-center">
+                    <CalendarIcon className="h-5 w-5 mr-2" />
+                    {importantInfo.dress_code_title}
+                  </h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {importantInfo.dress_code_description}
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-primary text-lg mb-3 flex items-center">
+                    <HeartIcon className="h-5 w-5 mr-2" />
+                    {importantInfo.health_protocol_title}
+                  </h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {importantInfo.health_protocol_description}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-4">
-                <h4 className="font-semibold text-primary text-lg mb-3 flex items-center">
-                  <HeartIcon className="h-5 w-5 mr-2" />
-                  Protokol Kesehatan
-                </h4>
-                <p className="text-muted-foreground leading-relaxed">
-                  Demi kenyamanan bersama, kami menerapkan protokol kesehatan yang ketat 
-                  sesuai dengan ketentuan yang berlaku saat ini.
-                </p>
-              </div>
-            </div>
-            <div className="mt-8 text-center">
-              <Button variant="gold" size="xl" className="smoke-effect shadow-glow">
-                <CameraIcon className="h-5 w-5 mr-2" />
-                Download E-Invitation
-              </Button>
+              {importantInfo.download_invitation_enabled && (
+                <div className="mt-8 text-center">
+                  <Button 
+                    variant="gold" 
+                    size="xl" 
+                    className="smoke-effect shadow-glow"
+                    onClick={() => {
+                      // Generate and download invitation
+                      toast({
+                        title: "Download dimulai",
+                        description: "E-invitation sedang dipersiapkan untuk diunduh",
+                      });
+                    }}
+                  >
+                    <CameraIcon className="h-5 w-5 mr-2" />
+                    {importantInfo.download_invitation_text}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

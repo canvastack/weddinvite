@@ -1,6 +1,7 @@
 import { Navigation } from '@/components/Navigation';
 import { WeddingHero } from '@/components/WeddingHero';
 import { CoupleSection } from '@/components/CoupleSection';
+import { LoveStorySection } from '@/components/LoveStorySection';
 import { WeddingDetails } from '@/components/WeddingDetails';
 import { RSVPSection } from '@/components/RSVPSection';
 import { Footer } from '@/components/Footer';
@@ -18,6 +19,9 @@ const Index = () => {
         
         <div id="couple">
           <CoupleSection />
+          <div className="mt-24">
+            <LoveStorySection />
+          </div>
         </div>
         
         <div id="details">

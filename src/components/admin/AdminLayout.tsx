@@ -35,6 +35,9 @@ const AdminLayout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Manajemen Tamu', href: '/admin/guests', icon: UsersIcon },
+    { name: 'Manajemen Mempelai', href: '/admin/couple', icon: UsersIcon },
+    { name: 'Kisah Cinta', href: '/admin/love-story', icon: HeartIcon },
+    { name: 'Konten Website', href: '/admin/content', icon: DocumentTextIcon },
     { name: 'Email Blast', href: '/admin/email', icon: EnvelopeIcon },
     { name: 'Peta & Lokasi', href: '/admin/map', icon: MapPinIcon },
     { name: 'Acara', href: '/admin/events', icon: CalendarIcon },

@@ -1,8 +1,40 @@
 
 import { HeartIcon, EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
+import { useWeddingContent } from '@/hooks/useWeddingContent';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 export const Footer = () => {
+  const { footerContent, isLoading, error } = useWeddingContent();
+
+  if (isLoading) {
+    return (
+      <footer className="relative overflow-hidden">
+        <div className="container mx-auto px-6 py-16 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Memuat footer...</p>
+        </div>
+      </footer>
+    );
+  }
+
+  if (error || !footerContent) {
+    return (
+      <footer className="relative overflow-hidden">
+        <div className="container mx-auto px-6 py-16 text-center">
+          <HeartIcon className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            {error || 'Footer content tidak ditemukan'}
+          </p>
+        </div>
+      </footer>
+    );
+  }
+
+  const weddingDate = new Date(footerContent.wedding_date);
+  const formattedDate = format(weddingDate, 'd MMMM yyyy', { locale: id });
+
   return (
     <footer className="relative overflow-hidden">
       {/* Animated Gradient Background */}
@@ -24,10 +56,10 @@ export const Footer = () => {
               <div className="mb-6">
                 <HeartIcon className="h-16 w-16 text-primary mx-auto lg:mx-0 mb-4 floating" />
                 <h3 className="text-4xl font-bold text-gradient mb-2">
-                  Dhika & Sari
+                  {footerContent.couple_names}
                 </h3>
                 <p className="text-xl text-muted-foreground mb-4">
-                  15 Februari 2025
+                  {formattedDate}
                 </p>
                 <div className="flex items-center justify-center lg:justify-start">
                   <div className="h-1 w-16 bg-gradient-premium rounded-full" />
@@ -37,8 +69,7 @@ export const Footer = () => {
               </div>
               
               <p className="text-muted-foreground leading-relaxed max-w-md mx-auto lg:mx-0">
-                Dengan penuh sukacita, kami mengundang Anda untuk menjadi saksi dalam 
-                perjalanan cinta kami yang akan diabadikan dalam ikatan suci pernikahan.
+                {footerContent.footer_description}
               </p>
             </div>
 
@@ -71,21 +102,27 @@ export const Footer = () => {
                 Hubungi Kami
               </h4>
               <div className="space-y-4">
-                <div className="flex items-center justify-center lg:justify-start gap-3 text-muted-foreground hover:text-primary transition-colors duration-300 group">
-                  <PhoneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                  <span>+62 812-3456-7890</span>
-                </div>
-                <div className="flex items-center justify-center lg:justify-start gap-3 text-muted-foreground hover:text-primary transition-colors duration-300 group">
-                  <EnvelopeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                  <span>wedding@dhikasari.com</span>
-                </div>
-                <div className="flex items-start justify-center lg:justify-start gap-3 text-muted-foreground hover:text-primary transition-colors duration-300 group">
-                  <MapPinIcon className="h-5 w-5 mt-0.5 group-hover:scale-110 transition-transform" />
-                  <div>
-                    <p>Jakarta, Indonesia</p>
-                    <p className="text-sm">Event Organizer</p>
+                {footerContent.contact_phone && (
+                  <div className="flex items-center justify-center lg:justify-start gap-3 text-muted-foreground hover:text-primary transition-colors duration-300 group">
+                    <PhoneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <span>{footerContent.contact_phone}</span>
                   </div>
-                </div>
+                )}
+                {footerContent.contact_email && (
+                  <div className="flex items-center justify-center lg:justify-start gap-3 text-muted-foreground hover:text-primary transition-colors duration-300 group">
+                    <EnvelopeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <span>{footerContent.contact_email}</span>
+                  </div>
+                )}
+                {footerContent.contact_address && (
+                  <div className="flex items-start justify-center lg:justify-start gap-3 text-muted-foreground hover:text-primary transition-colors duration-300 group">
+                    <MapPinIcon className="h-5 w-5 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <div>
+                      <p>{footerContent.contact_address}</p>
+                      <p className="text-sm">Event Organizer</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -94,25 +131,51 @@ export const Footer = () => {
           <div className="elegant-card bg-card/60 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-primary/10 hover:border-primary/20 transition-all duration-500">
             <div className="text-center">
               <h4 className="text-2xl font-bold text-gradient mb-4">
-                Terima Kasih Atas Doa & Restu Anda
+                {footerContent.thank_you_title}
               </h4>
               <p className="text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-6">
-                Kehadiran dan doa restu dari keluarga serta sahabat tercinta merupakan 
-                karunia terindah bagi kami. Semoga Allah SWT senantiasa melimpahkan 
-                rahmat dan berkah-Nya kepada kita semua. Barakallahu lana wa lakum.
+                {footerContent.thank_you_message}
               </p>
               
               {/* Social Actions */}
               <div className="flex flex-wrap justify-center gap-4">
-                <Button variant="premium" size="sm" className="smoke-effect">
-                  📱 WhatsApp
-                </Button>
-                <Button variant="elegant" size="sm" className="smoke-effect">
-                  ✉️ Email
-                </Button>
-                <Button variant="gold" size="sm" className="smoke-effect">
-                  📍 Share Lokasi
-                </Button>
+                {footerContent.social_buttons.map((button, index) => (
+                  <Button 
+                    key={index}
+                    variant={index % 3 === 0 ? "premium" : index % 3 === 1 ? "elegant" : "gold"} 
+                    size="sm" 
+                    className="smoke-effect"
+                    onClick={() => {
+                      switch (button.action) {
+                        case 'whatsapp':
+                          if (footerContent.contact_phone) {
+                            window.open(`https://wa.me/${footerContent.contact_phone.replace(/[^0-9]/g, '')}`, '_blank');
+                          }
+                          break;
+                        case 'email':
+                          if (footerContent.contact_email) {
+                            window.open(`mailto:${footerContent.contact_email}`, '_blank');
+                          }
+                          break;
+                        case 'location':
+                          // Share current page URL
+                          navigator.share?.({
+                            title: `${footerContent.couple_names} Wedding`,
+                            url: window.location.href
+                          }).catch(() => {
+                            navigator.clipboard.writeText(window.location.href);
+                            toast({
+                              title: "Link disalin",
+                              description: "Link undangan telah disalin ke clipboard",
+                            });
+                          });
+                          break;
+                      }
+                    }}
+                  >
+                    {button.text}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
@@ -122,7 +185,7 @@ export const Footer = () => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-center md:text-left">
                 <p className="text-sm text-muted-foreground">
-                  © 2025 Dhika & Sari Wedding Invitation
+                  {footerContent.copyright_text}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Designed with ❤️ using Lovable & Premium Design System

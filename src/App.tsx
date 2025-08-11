@@ -21,6 +21,9 @@ import Login from '@/pages/admin/Login';
 import UserManagementFixed from '@/components/admin/UserManagementFixed';
 import HeroManagement from '@/pages/admin/HeroManagement';
 import ThemeManagement from '@/pages/admin/ThemeManagement';
+import CoupleManagement from '@/pages/admin/CoupleManagement';
+import LoveStoryManagement from '@/pages/admin/LoveStoryManagement';
+import ContentManagement from '@/pages/admin/ContentManagement';
 
 // Admin components
 import EmailBlastManager from '@/components/admin/EmailBlastManager';
@@ -51,6 +54,9 @@ function App() {
                   <Route path="users" element={<UserManagementFixed />} />
                   <Route path="hero" element={<HeroManagement />} />
                   <Route path="theme" element={<ThemeManagement />} />
+                  <Route path="couple" element={<CoupleManagement />} />
+                  <Route path="love-story" element={<LoveStoryManagement />} />
+                  <Route path="content" element={<ContentManagement />} />
                   <Route path="email" element={<EmailBlastManager />} />
                   <Route path="map" element={<MapManager />} />
                 </Route>

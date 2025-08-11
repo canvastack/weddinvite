@@ -7,10 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircleIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
+import { useWeddingContent } from '@/hooks/useWeddingContent';
 
 export const RSVPSection = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
+  const { contactInfo } = useWeddingContent();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,22 +190,40 @@ export const RSVPSection = () => {
 
         {/* Contact Info */}
         <div className="mt-16 text-center">
-          <div className="elegant-card bg-card/60 backdrop-blur-sm rounded-2xl p-8 max-w-xl mx-auto">
-            <h3 className="text-xl font-bold text-gradient mb-4">
-              Butuh Bantuan?
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Hubungi kami jika ada pertanyaan atau kendala dalam konfirmasi
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="outline" className="smoke-effect">
-                WhatsApp: +62 812-3456-7890
-              </Button>
-              <Button variant="outline" className="smoke-effect">
-                Email: wedding@dhikasari.com
-              </Button>
+          {contactInfo && contactInfo.is_visible && (
+            <div className="elegant-card bg-card/60 backdrop-blur-sm rounded-2xl p-8 max-w-xl mx-auto">
+              <h3 className="text-xl font-bold text-gradient mb-4">
+                {contactInfo.help_title}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {contactInfo.help_description}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {contactInfo.whatsapp_number && (
+                  <Button 
+                    variant="outline" 
+                    className="smoke-effect"
+                    onClick={() => {
+                      window.open(`https://wa.me/${contactInfo.whatsapp_number.replace(/[^0-9]/g, '')}`, '_blank');
+                    }}
+                  >
+                    {contactInfo.whatsapp_text}: {contactInfo.whatsapp_number}
+                  </Button>
+                )}
+                {contactInfo.email_address && (
+                  <Button 
+                    variant="outline" 
+                    className="smoke-effect"
+                    onClick={() => {
+                      window.open(`mailto:${contactInfo.email_address}`, '_blank');
+                    }}
+                  >
+                    {contactInfo.email_text}: {contactInfo.email_address}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>
