@@ -1,33 +1,22 @@
 
 import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { EnvelopeIcon, PaperAirplaneIcon, UsersIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Mail, Send, Users, FileText, Activity, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useEmailCampaigns, EmailTemplate } from '@/hooks/useEmailCampaigns';
 
-export const EmailBlastManager = () => {
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'templates' | 'create'>('campaigns');
-  const [newCampaign, setNewCampaign] = useState({
-    name: '',
-    templateId: '',
-    recipientGroup: 'all'
-  });
-  const [newTemplate, setNewTemplate] = useState({
-    name: '',
-    subject: '',
-    content: '',
-    type: 'custom' as EmailTemplate['template_type']
-  });
-
+const EmailBlastManager = () => {
   const {
     campaigns,
     templates,
+    guests,
     isLoading,
     createCampaign,
     sendCampaign,
@@ -35,387 +24,375 @@ export const EmailBlastManager = () => {
     getEmailStats
   } = useEmailCampaigns();
 
+  const [newCampaign, setNewCampaign] = useState({
+    name: '',
+    templateId: '',
+    recipientGroup: 'all'
+  });
+
+  const [newTemplate, setNewTemplate] = useState({
+    name: '',
+    subject: '',
+    content: '',
+    type: 'custom' as EmailTemplate['template_type']
+  });
+
+  const [createCampaignDialogOpen, setCreateCampaignDialogOpen] = useState(false);
+  const [createTemplateDialogOpen, setCreateTemplateDialogOpen] = useState(false);
+
   const stats = getEmailStats();
 
-  const handleSendCampaign = async (campaignId: string) => {
-    const campaign = campaigns.find(c => c.id === campaignId);
-    if (campaign) {
-      await sendCampaign(campaignId, campaign.template_id, campaign.recipient_group);
+  const handleCreateCampaign = async () => {
+    if (!newCampaign.name || !newCampaign.templateId) return;
+
+    try {
+      await createCampaign(newCampaign);
+      setNewCampaign({ name: '', templateId: '', recipientGroup: 'all' });
+      setCreateCampaignDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to create campaign:', error);
     }
   };
 
-  const handleCreateCampaign = async () => {
-    await createCampaign(newCampaign);
-    setNewCampaign({ name: '', templateId: '', recipientGroup: 'all' });
-    setActiveTab('campaigns');
+  const handleCreateTemplate = async () => {
+    if (!newTemplate.name || !newTemplate.subject || !newTemplate.content) return;
+
+    try {
+      await createTemplate(newTemplate);
+      setNewTemplate({ name: '', subject: '', content: '', type: 'custom' });
+      setCreateTemplateDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to create template:', error);
+    }
   };
 
-  const handleSaveTemplate = async () => {
-    await createTemplate(newTemplate);
-    setNewTemplate({ name: '', subject: '', content: '', type: 'custom' });
+  const handleSendCampaign = async (campaignId: string, templateId: string, recipientGroup: string) => {
+    try {
+      await sendCampaign(campaignId, templateId, recipientGroup);
+    } catch (error) {
+      console.error('Failed to send campaign:', error);
+    }
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      draft: { variant: 'secondary' as const, label: 'Draft', icon: ClockIcon },
-      sending: { variant: 'default' as const, label: 'Mengirim', icon: PaperAirplaneIcon },
-      sent: { variant: 'default' as const, label: 'Terkirim', icon: CheckCircleIcon },
-      failed: { variant: 'destructive' as const, label: 'Gagal', icon: ClockIcon }
-    };
-    const config = variants[status as keyof typeof variants];
-    const IconComponent = config.icon;
-    
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
-        <IconComponent className="h-3 w-3" />
-        {config.label}
-      </Badge>
-    );
+    switch (status) {
+      case 'sent':
+        return <Badge variant="default" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Terkirim</Badge>;
+      case 'sending':
+        return <Badge variant="default" className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />Mengirim</Badge>;
+      case 'failed':
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Gagal</Badge>;
+      case 'draft':
+        return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" />Draft</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   const getRecipientGroupLabel = (group: string) => {
-    const labels = {
-      all: 'Semua Tamu',
-      confirmed: 'Yang Sudah Konfirmasi',
-      pending: 'Yang Belum Konfirmasi',
-      family: 'Keluarga',
-      friends: 'Teman'
-    };
-    return labels[group as keyof typeof labels] || group;
+    switch (group) {
+      case 'all': return 'Semua Tamu';
+      case 'pending': return 'Menunggu RSVP';
+      case 'attending': return 'Akan Hadir';
+      case 'akad': return 'Akad Nikah';
+      case 'resepsi': return 'Resepsi';
+      default: return group;
+    }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gradient">Email Blast Manager</h1>
-          <p className="text-muted-foreground">Kelola kampanye email dan template undangan</p>
-        </div>
-        <EnvelopeIcon className="h-8 w-8 text-primary" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Campaign</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalCampaigns}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Email Terkirim</CardTitle>
+            <Mail className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalSent}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tamu</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalGuests}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Template Aktif</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeTemplates}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex space-x-1 bg-muted p-1 rounded-lg w-fit">
-        <Button
-          variant={activeTab === 'campaigns' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('campaigns')}
-        >
-          Campaigns
-        </Button>
-        <Button
-          variant={activeTab === 'templates' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('templates')}
-        >
-          Templates
-        </Button>
-        <Button
-          variant={activeTab === 'create' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('create')}
-        >
-          Buat Baru
-        </Button>
-      </div>
+      <Tabs defaultValue="campaigns" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="campaigns">Email Campaigns</TabsTrigger>
+          <TabsTrigger value="templates">Email Templates</TabsTrigger>
+        </TabsList>
 
-      {/* Campaigns Tab */}
-      {activeTab === 'campaigns' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <PaperAirplaneIcon className="h-6 w-6 text-primary" />
+        <TabsContent value="campaigns" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Email Campaigns</h3>
+            <Dialog open={createCampaignDialogOpen} onOpenChange={setCreateCampaignDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Buat Campaign Baru
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Buat Email Campaign Baru</DialogTitle>
+                  <DialogDescription>
+                    Buat campaign email untuk mengirim undangan atau pengingat ke tamu.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="campaign-name">Nama Campaign</Label>
+                    <Input
+                      id="campaign-name"
+                      value={newCampaign.name}
+                      onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
+                      placeholder="Masukkan nama campaign"
+                    />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{stats.totalCampaigns}</p>
-                    <p className="text-sm text-muted-foreground">Total Campaigns</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-                    <CheckCircleIcon className="h-6 w-6 text-green-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalSent}</p>
-                    <p className="text-sm text-muted-foreground">Email Terkirim</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                    <UsersIcon className="h-6 w-6 text-blue-500" />
+                    <Label htmlFor="template-select">Template Email</Label>
+                    <Select value={newCampaign.templateId} onValueChange={(value) => setNewCampaign({ ...newCampaign, templateId: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{templates.length}</p>
-                    <p className="text-sm text-muted-foreground">Templates Aktif</p>
+                    <Label htmlFor="recipient-group">Grup Penerima</Label>
+                    <Select value={newCampaign.recipientGroup} onValueChange={(value) => setNewCampaign({ ...newCampaign, recipientGroup: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Semua Tamu</SelectItem>
+                        <SelectItem value="pending">Menunggu RSVP</SelectItem>
+                        <SelectItem value="attending">Akan Hadir</SelectItem>
+                        <SelectItem value="akad">Akad Nikah</SelectItem>
+                        <SelectItem value="resepsi">Resepsi</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreateCampaignDialogOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button onClick={handleCreateCampaign} disabled={isLoading}>
+                    {isLoading ? 'Membuat...' : 'Buat Campaign'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Daftar Campaigns</CardTitle>
-              <CardDescription>
-                Kelola semua campaign email yang pernah dibuat
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {campaigns.map((campaign) => (
-                  <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-medium">{campaign.name}</h3>
-                        {getStatusBadge(campaign.status)}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Template: {campaign.email_templates?.name || 'N/A'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Target: {getRecipientGroupLabel(campaign.recipient_group)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Dibuat: {new Date(campaign.created_at).toLocaleDateString('id-ID')}
-                        {campaign.sent_at && ` • Dikirim: ${new Date(campaign.sent_at).toLocaleDateString('id-ID')}`}
-                      </p>
+          <div className="grid gap-4">
+            {campaigns.map((campaign) => (
+              <Card key={campaign.id}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                      <CardDescription>
+                        Template: {campaign.email_templates?.name} • Penerima: {getRecipientGroupLabel(campaign.recipient_group)}
+                      </CardDescription>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm font-medium">
-                          {campaign.sent_count || 0}/{campaign.total_recipients || 0}
-                        </p>
-                        <p className="text-xs text-muted-foreground">terkirim</p>
-                        {campaign.failed_count > 0 && (
-                          <p className="text-xs text-red-500">{campaign.failed_count} gagal</p>
-                        )}
+                    {getStatusBadge(campaign.status)}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Total:</span>
+                        <div className="font-medium">{campaign.total_recipients} penerima</div>
                       </div>
-                      {campaign.status === 'draft' && (
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleSendCampaign(campaign.id)}
-                          disabled={isLoading}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          <PaperAirplaneIcon className="h-4 w-4 mr-1" />
-                          Kirim
-                        </Button>
+                      <div>
+                        <span className="text-muted-foreground">Terkirim:</span>
+                        <div className="font-medium text-green-600">{campaign.sent_count}</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Gagal:</span>
+                        <div className="font-medium text-red-600">{campaign.failed_count}</div>
+                      </div>
+                    </div>
+                    {campaign.status === 'draft' && (
+                      <Button 
+                        onClick={() => handleSendCampaign(campaign.id, campaign.template_id, campaign.recipient_group)}
+                        disabled={isLoading}
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        {isLoading ? 'Mengirim...' : 'Kirim Sekarang'}
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {campaigns.length === 0 && (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Belum ada email campaign. Buat yang pertama!</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="templates" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Email Templates</h3>
+            <Dialog open={createTemplateDialogOpen} onOpenChange={setCreateTemplateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Buat Template Baru
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Buat Email Template Baru</DialogTitle>
+                  <DialogDescription>
+                    Buat template email yang dapat digunakan untuk campaign.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="template-name">Nama Template</Label>
+                    <Input
+                      id="template-name"
+                      value={newTemplate.name}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+                      placeholder="Masukkan nama template"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="template-subject">Subject Email</Label>
+                    <Input
+                      id="template-subject"
+                      value={newTemplate.subject}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, subject: e.target.value })}
+                      placeholder="Masukkan subject email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="template-type">Tipe Template</Label>
+                    <Select value={newTemplate.type} onValueChange={(value: any) => setNewTemplate({ ...newTemplate, type: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="invitation">Undangan</SelectItem>
+                        <SelectItem value="reminder">Pengingat</SelectItem>
+                        <SelectItem value="thank_you">Terima Kasih</SelectItem>
+                        <SelectItem value="custom">Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="template-content">Konten Email (HTML)</Label>
+                    <Textarea
+                      id="template-content"
+                      value={newTemplate.content}
+                      onChange={(e) => setNewTemplate({ ...newTemplate, content: e.target.value })}
+                      placeholder="Masukkan konten email dalam format HTML"
+                      rows={6}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreateTemplateDialogOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button onClick={handleCreateTemplate} disabled={isLoading}>
+                    {isLoading ? 'Menyimpan...' : 'Simpan Template'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <div className="grid gap-4">
+            {templates.map((template) => (
+              <Card key={template.id}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{template.name}</CardTitle>
+                      <CardDescription>{template.subject}</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge variant={template.template_type === 'invitation' ? 'default' : 'secondary'}>
+                        {template.template_type === 'invitation' ? 'Undangan' : 
+                         template.template_type === 'reminder' ? 'Pengingat' :
+                         template.template_type === 'thank_you' ? 'Terima Kasih' : 'Custom'}
+                      </Badge>
+                      {template.is_active && (
+                        <Badge variant="outline" className="text-green-600 border-green-600">
+                          Aktif
+                        </Badge>
                       )}
                     </div>
                   </div>
-                ))}
-                {campaigns.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
-                    Belum ada campaign. Buat campaign pertama Anda!
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    Dibuat: {new Date(template.created_at).toLocaleDateString('id-ID')}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
 
-      {/* Templates Tab */}
-      {activeTab === 'templates' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Email Templates</CardTitle>
-            <CardDescription>
-              Kelola template email untuk berbagai keperluan
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {templates.map((template) => (
-                <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium">{template.name}</h3>
-                        <Badge variant="outline">{template.template_type}</Badge>
-                      </div>
-                      <p className="text-sm font-medium">{template.subject}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {template.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
-                      </p>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1">
-                          Edit
-                        </Button>
-                        <Button size="sm" className="flex-1">
-                          Gunakan
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {templates.length === 0 && (
-                <p className="col-span-full text-center text-muted-foreground py-8">
-                  Belum ada template. Buat template pertama Anda!
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Create New Tab */}
-      {activeTab === 'create' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Create Campaign */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Buat Campaign Baru</CardTitle>
-              <CardDescription>
-                Buat campaign email blast untuk mengirim undangan
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="campaignName">Nama Campaign</Label>
-                <Input
-                  id="campaignName"
-                  placeholder="Masukkan nama campaign"
-                  value={newCampaign.name}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Pilih Template</Label>
-                <Select 
-                  value={newCampaign.templateId} 
-                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, templateId: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih template email" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {templates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
-                        {template.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Grup Penerima</Label>
-                <Select 
-                  value={newCampaign.recipientGroup} 
-                  onValueChange={(value) => setNewCampaign(prev => ({ ...prev, recipientGroup: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Tamu</SelectItem>
-                    <SelectItem value="confirmed">Yang Sudah Konfirmasi</SelectItem>
-                    <SelectItem value="pending">Yang Belum Konfirmasi</SelectItem>
-                    <SelectItem value="family">Keluarga</SelectItem>
-                    <SelectItem value="friends">Teman</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator />
-
-              <Button 
-                onClick={handleCreateCampaign} 
-                className="w-full"
-                disabled={!newCampaign.name || !newCampaign.templateId || isLoading}
-              >
-                <PaperAirplaneIcon className="h-4 w-4 mr-2" />
-                Buat Campaign
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Create Template */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Buat Template Baru</CardTitle>
-              <CardDescription>
-                Buat template email untuk digunakan dalam campaign
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="templateName">Nama Template</Label>
-                <Input
-                  id="templateName"
-                  placeholder="Masukkan nama template"
-                  value={newTemplate.name}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="templateSubject">Subject Email</Label>
-                <Input
-                  id="templateSubject"
-                  placeholder="Masukkan subject email"
-                  value={newTemplate.subject}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, subject: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Tipe Template</Label>
-                <Select 
-                  value={newTemplate.type} 
-                  onValueChange={(value: EmailTemplate['template_type']) => setNewTemplate(prev => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="invitation">Undangan</SelectItem>
-                    <SelectItem value="reminder">Pengingat</SelectItem>
-                    <SelectItem value="thank_you">Terima Kasih</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="templateContent">Isi Email</Label>
-                <Textarea
-                  id="templateContent"
-                  placeholder="Tulis isi email... Gunakan {{name}} untuk nama tamu"
-                  rows={6}
-                  value={newTemplate.content}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, content: e.target.value }))}
-                />
-              </div>
-
-              <Button 
-                onClick={handleSaveTemplate} 
-                variant="outline" 
-                className="w-full"
-                disabled={!newTemplate.name || !newTemplate.subject || !newTemplate.content || isLoading}
-              >
-                Simpan Template
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            {templates.length === 0 && (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Belum ada template email. Buat yang pertama!</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
+
+export default EmailBlastManager;
