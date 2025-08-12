@@ -13,7 +13,16 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "db:migrate": "tsx src/database/migrate.ts",
-    "db:migrate:test": "NODE_ENV=test tsx src/database/migrate.ts"
+    "db:migrate:test": "NODE_ENV=test tsx src/database/migrate.ts",
+    "db:migrate:enhanced": "node run-enhanced-migrations.cjs migrate",
+    "db:seed": "node run-enhanced-migrations.cjs seed",
+    "db:seed:prod": "node run-enhanced-migrations.cjs seed production",
+    "db:status": "node run-enhanced-migrations.cjs status",
+    "db:rollback": "node run-enhanced-migrations.cjs rollback",
+    "db:setup": "npm run db:migrate:enhanced && npm run db:seed",
+    "db:reset": "node run-migrations.cjs && npm run db:seed",
+    "db:test": "node test-enhanced-migration-simple.cjs",
+    "db:test:full": "node test-enhanced-migration-system.cjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
