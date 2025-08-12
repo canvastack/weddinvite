@@ -11,15 +11,22 @@ export const ThemeToggle = () => {
       variant="ghost"
       size="icon"
       onClick={toggleDarkMode}
-      className="smoke-effect premium-hover rounded-full border border-primary/20 backdrop-blur-sm relative overflow-hidden group"
+      className="smoke-effect premium-hover rounded-full border border-primary/20 backdrop-blur-sm relative overflow-hidden group transition-all duration-300"
     >
       {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-rose-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-rose-gold/10 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-full scale-0 group-hover:scale-100" />
+      
+      {/* Rotation animation container */}
+      <div className="relative z-10 transition-transform duration-500 group-hover:rotate-180">
       {isDarkMode ? (
-        <SunIcon className="h-5 w-5 text-primary relative z-10 group-hover:scale-110 transition-transform" />
+          <SunIcon className="h-5 w-5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:text-yellow-500" />
       ) : (
-        <MoonIcon className="h-5 w-5 text-primary relative z-10 group-hover:scale-110 transition-transform" />
+          <MoonIcon className="h-5 w-5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:text-blue-500" />
       )}
+      </div>
+      
+      {/* Glow effect */}
+      <div className="absolute inset-0 rounded-full bg-primary/20 scale-0 group-hover:scale-150 opacity-0 group-hover:opacity-50 transition-all duration-700 blur-sm" />
     </Button>
   );
 };

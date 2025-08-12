@@ -25,7 +25,7 @@ import {
   ArrowPathIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
-import { Save, Copy, Download, Upload, Palette, Monitor } from 'lucide-react';
+import { Save, Copy, Download, Upload, Palette, Monitor, AlertTriangle } from 'lucide-react';
 import ThemePreview from './ThemePreview';
 
 const ThemeEditor = () => {
@@ -52,6 +52,15 @@ const ThemeEditor = () => {
   const { toast } = useToast();
 
   const handleThemeChange = (section: keyof ThemeConfig, field: string, value: any) => {
+    if (editingTheme.isDefault) {
+      toast({
+        title: "Tema default dilindungi",
+        description: "Buat tema baru untuk melakukan kustomisasi",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setEditingTheme(prev => ({
       ...prev,
       [section]: {
@@ -79,11 +88,6 @@ const ThemeEditor = () => {
 
     updateTheme(editingTheme);
     setIsEditing(false);
-    
-    toast({
-      title: "Tema disimpan",
-      description: "Perubahan tema telah disimpan",
-    });
   };
 
   const handleApplyTheme = () => {
@@ -118,11 +122,6 @@ const ThemeEditor = () => {
     setIsCreateDialogOpen(false);
     setNewThemeName('');
     setNewThemeDescription('');
-    
-    toast({
-      title: "Tema baru dibuat",
-      description: `Tema "${newTheme.name}" siap untuk dikustomisasi`,
-    });
   };
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -297,7 +296,10 @@ const ThemeEditor = () => {
                       ? 'border-primary bg-primary/5 shadow-md' 
                       : 'hover:bg-muted/50 hover:border-muted-foreground/20'
                   }`}
-                  onClick={() => setEditingTheme(theme)}
+                  onClick={() => {
+                    setEditingTheme(theme);
+                    setIsEditing(false);
+                  }}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -308,11 +310,14 @@ const ThemeEditor = () => {
                       {theme.isDefault && (
                         <Badge variant="secondary" className="text-xs">
                           <ShieldCheckIcon className="h-3 w-3 mr-1" />
-                          Default
+                          Protected
                         </Badge>
                       )}
                       {currentTheme.id === theme.id && !isDefaultMode && (
                         <Badge variant="default" className="text-xs">Active</Badge>
+                      )}
+                      {isDefaultMode && theme.isDefault && (
+                        <Badge variant="default" className="text-xs">Current</Badge>
                       )}
                     </div>
                   </div>
@@ -350,7 +355,9 @@ const ThemeEditor = () => {
                         variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteTheme(theme.id);
+                          if (window.confirm(`Hapus tema "${theme.name}"?`)) {
+                            deleteTheme(theme.id);
+                          }
                         }}
                       >
                         <TrashIcon className="h-3 w-3" />
@@ -435,6 +442,16 @@ const ThemeEditor = () => {
                 </Button>
               </div>
             </div>
+            
+            {/* Warning for default theme */}
+            {editingTheme.isDefault && (
+              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Tema default dilindungi. Buat tema baru untuk melakukan kustomisasi.
+                </p>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="colors" className="w-full">
@@ -544,6 +561,7 @@ const ThemeEditor = () => {
                         <SelectItem value="Poppins">Poppins</SelectItem>
                         <SelectItem value="Open Sans">Open Sans</SelectItem>
                         <SelectItem value="Lato">Lato</SelectItem>
+                        <SelectItem value="Playfair Display">Playfair Display</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

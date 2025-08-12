@@ -78,7 +78,7 @@ export interface ThemeConfig {
 const DEFAULT_THEME: ThemeConfig = {
   id: 'default',
   name: 'Default Wedding Theme',
-  description: 'Original elegant wedding design with premium gold accents',
+  description: 'Original elegant wedding design with premium gold accents - PROTECTED',
   
   colors: {
     primary: '45 95% 58%',
@@ -355,16 +355,20 @@ export const useThemeManager = () => {
 
   // Apply theme to CSS variables
   const applyTheme = (theme: ThemeConfig, darkMode: boolean = false) => {
-    if (isDefaultMode && theme.isDefault) {
-      // Don't override default theme - just apply dark mode class
+    const root = document.documentElement;
+    
+    // If it's default theme, don't override anything - just handle dark mode
+    if (theme.isDefault) {
       document.documentElement.classList.toggle('dark', darkMode);
+      // Remove any custom theme classes
+      document.body.className = document.body.className.replace(/theme-\w+/g, '');
+      document.body.classList.remove('theme-active');
       return;
     }
 
-    const root = document.documentElement;
     const colors = darkMode && theme.darkMode.enabled ? theme.darkMode.colors : theme.colors;
     
-    // Apply color variables with theme prefix to avoid conflicts
+    // Apply theme-specific CSS variables (with theme- prefix to avoid conflicts)
     root.style.setProperty('--theme-primary', colors.primary || theme.colors.primary);
     root.style.setProperty('--theme-primary-glow', colors.primaryGlow || theme.colors.primaryGlow);
     root.style.setProperty('--theme-secondary', colors.secondary || theme.colors.secondary);
@@ -389,27 +393,22 @@ export const useThemeManager = () => {
     
     // Apply theme class to body for component-specific styling
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
-    if (!theme.isDefault) {
-      document.body.classList.add(`theme-${theme.id}`);
-      document.body.classList.add('theme-active');
-    }
+    document.body.classList.add(`theme-${theme.id}`, 'theme-active');
     
     // Apply dark mode class
     document.documentElement.classList.toggle('dark', darkMode);
     
-    // Override CSS variables when theme is active
-    if (!theme.isDefault) {
-      root.style.setProperty('--primary', colors.primary || theme.colors.primary);
-      root.style.setProperty('--primary-glow', colors.primaryGlow || theme.colors.primaryGlow);
-      root.style.setProperty('--secondary', colors.secondary || theme.colors.secondary);
-      root.style.setProperty('--accent', colors.accent || theme.colors.accent);
-      root.style.setProperty('--rose-gold', colors.roseGold || theme.colors.roseGold);
-      root.style.setProperty('--background', colors.background || theme.colors.background);
-      root.style.setProperty('--card', colors.card || theme.colors.card);
-      root.style.setProperty('--foreground', colors.text || theme.colors.text);
-      root.style.setProperty('--muted-foreground', colors.muted || theme.colors.muted);
-      root.style.setProperty('--border', colors.border || theme.colors.border);
-    }
+    // Override main CSS variables when theme is active (for immediate effect)
+    root.style.setProperty('--primary', colors.primary || theme.colors.primary);
+    root.style.setProperty('--primary-glow', colors.primaryGlow || theme.colors.primaryGlow);
+    root.style.setProperty('--secondary', colors.secondary || theme.colors.secondary);
+    root.style.setProperty('--accent', colors.accent || theme.colors.accent);
+    root.style.setProperty('--rose-gold', colors.roseGold || theme.colors.roseGold);
+    root.style.setProperty('--background', colors.background || theme.colors.background);
+    root.style.setProperty('--card', colors.card || theme.colors.card);
+    root.style.setProperty('--foreground', colors.text || theme.colors.text);
+    root.style.setProperty('--muted-foreground', colors.muted || theme.colors.muted);
+    root.style.setProperty('--border', colors.border || theme.colors.border);
   };
 
   const activateTheme = (theme: ThemeConfig) => {
@@ -429,14 +428,28 @@ export const useThemeManager = () => {
   };
 
   const updateTheme = (updatedTheme: ThemeConfig) => {
+    if (updatedTheme.isDefault) {
+      toast({
+        title: "Tidak dapat mengubah tema default",
+        description: "Tema default dilindungi dan tidak dapat dimodifikasi",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setThemes(prev => prev.map(theme => 
       theme.id === updatedTheme.id ? updatedTheme : theme
     ));
     
-    if (currentTheme.id === updatedTheme.id) {
+    if (currentTheme.id === updatedTheme.id && !isDefaultMode) {
       setCurrentTheme(updatedTheme);
       applyTheme(updatedTheme, isDarkMode);
     }
+    
+    toast({
+      title: "Tema diperbarui",
+      description: `Tema "${updatedTheme.name}" telah diperbarui`,
+    });
   };
 
   const createTheme = (newTheme: Omit<ThemeConfig, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -448,6 +461,12 @@ export const useThemeManager = () => {
     };
     
     setThemes(prev => [...prev, theme]);
+    
+    toast({
+      title: "Tema baru dibuat",
+      description: `Tema "${theme.name}" berhasil dibuat`,
+    });
+    
     return theme;
   };
 
@@ -498,6 +517,11 @@ export const useThemeManager = () => {
     
     // Apply dark mode to default theme
     document.documentElement.classList.toggle('dark', isDarkMode);
+    
+    toast({
+      title: "Tema direset",
+      description: "Kembali ke tema default",
+    });
   };
 
   const toggleDarkMode = () => {
@@ -510,6 +534,11 @@ export const useThemeManager = () => {
       // Apply dark mode to default theme
       document.documentElement.classList.toggle('dark', newDarkMode);
     }
+    
+    toast({
+      title: `${newDarkMode ? 'Dark' : 'Light'} mode diaktifkan`,
+      description: `Tema telah beralih ke ${newDarkMode ? 'dark' : 'light'} mode`,
+    });
   };
 
   const exportTheme = (theme: ThemeConfig) => {
@@ -561,10 +590,13 @@ export const useThemeManager = () => {
 
   // Apply theme on mount and when theme changes
   useEffect(() => {
-    if (!isDefaultMode) {
-      applyTheme(currentTheme, isDarkMode);
-    } else {
+    if (isDefaultMode) {
+      // For default mode, just apply dark/light mode
       document.documentElement.classList.toggle('dark', isDarkMode);
+      document.body.className = document.body.className.replace(/theme-\w+/g, '');
+      document.body.classList.remove('theme-active');
+    } else {
+      applyTheme(currentTheme, isDarkMode);
     }
   }, [currentTheme, isDarkMode, isDefaultMode]);
 

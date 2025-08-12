@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { ThemeConfig } from '@/hooks/useThemeManager';
 import { HeartIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
@@ -14,7 +13,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
 
   return (
     <div 
-      className={`p-8 rounded-lg border space-y-6 transition-all duration-300 overflow-hidden ${className}`}
+      className={`p-8 rounded-lg border space-y-6 transition-all duration-300 overflow-hidden relative ${className}`}
       style={{
         backgroundColor: `hsl(${colors.background})`,
         borderColor: `hsl(${colors.border})`,
@@ -42,13 +41,15 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       <div className="text-center space-y-4 relative z-10">
         <div className="relative">
           <HeartIcon 
-            className={`h-12 w-12 mx-auto mb-4 ${theme.effects.animationSpeed !== 'instant' ? 'floating' : ''}`}
+            className={`h-12 w-12 mx-auto mb-4 transition-all duration-300 ${
+              theme.effects.animationSpeed !== 'instant' ? 'floating' : ''
+            }`}
             style={{ color: `hsl(${theme.colors.primary})` }}
           />
         </div>
         
         <h1 
-          className={`text-4xl font-bold ${theme.effects.animationSpeed !== 'instant' ? 'fade-in-up' : ''}`}
+          className="text-4xl font-bold transition-all duration-300"
           style={{ 
             background: `linear-gradient(135deg, hsl(${theme.colors.primary}), hsl(${theme.colors.primaryGlow}))`,
             WebkitBackgroundClip: 'text',
@@ -72,7 +73,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       {/* Info Cards Preview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
         <div 
-          className={`p-4 rounded-lg border transition-all duration-300 ${theme.components.cardStyle === 'elegant' ? 'elegant-card' : ''}`}
+          className="p-4 rounded-lg border transition-all duration-300 hover:shadow-lg group"
           style={{
             backgroundColor: `hsl(${colors.card})`,
             borderColor: `hsl(${colors.border})`,
@@ -88,7 +89,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
         >
           <div className="flex items-center gap-3 mb-3">
             <div 
-              className="p-2 rounded-full"
+              className="p-2 rounded-full transition-all duration-300 group-hover:scale-110"
               style={{ backgroundColor: `hsl(${theme.colors.primary} / 0.1)` }}
             >
               <CalendarIcon 
@@ -126,7 +127,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
         </div>
 
         <div 
-          className={`p-4 rounded-lg border transition-all duration-300 ${theme.components.cardStyle === 'elegant' ? 'elegant-card' : ''}`}
+          className="p-4 rounded-lg border transition-all duration-300 hover:shadow-lg group"
           style={{
             backgroundColor: `hsl(${colors.card})`,
             borderColor: `hsl(${colors.border})`,
@@ -142,7 +143,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
         >
           <div className="flex items-center gap-3 mb-3">
             <div 
-              className="p-2 rounded-full"
+              className="p-2 rounded-full transition-all duration-300 group-hover:scale-110"
               style={{ backgroundColor: `hsl(${theme.colors.roseGold} / 0.1)` }}
             >
               <MapPinIcon 
@@ -183,9 +184,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       {/* Button Preview */}
       <div className="flex gap-4 justify-center relative z-10">
         <button 
-          className={`px-6 py-3 font-medium transition-all duration-300 hover:scale-105 ${
-            theme.components.buttonStyle === 'premium' ? 'premium-hover' : ''
-          }`}
+          className="px-6 py-3 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg group relative overflow-hidden"
           style={{
             backgroundColor: `hsl(${theme.colors.primary})`,
             color: `hsl(${colors.background})`,
@@ -198,12 +197,11 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
             fontWeight: theme.typography.fontWeight.medium
           }}
         >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
           Primary Button
         </button>
         <button 
-          className={`px-6 py-3 font-medium border transition-all duration-300 hover:scale-105 ${
-            theme.components.buttonStyle === 'elegant' ? 'elegant-card' : ''
-          }`}
+          className="px-6 py-3 font-medium border transition-all duration-300 hover:scale-105 hover:shadow-lg group relative overflow-hidden"
           style={{
             borderColor: `hsl(${theme.colors.roseGold})`,
             color: `hsl(${theme.colors.roseGold})`,
@@ -212,6 +210,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
             fontWeight: theme.typography.fontWeight.medium
           }}
         >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-current/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
           Secondary Button
         </button>
       </div>
@@ -248,7 +247,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
       {theme.effects.blurIntensity !== 'none' && (
         <div className="relative z-10">
           <div 
-            className="p-4 rounded-lg"
+            className="p-4 rounded-lg transition-all duration-300 hover:backdrop-blur-lg"
             style={{
               backgroundColor: `hsl(${colors.card})`,
               backdropFilter: theme.effects.blurIntensity === 'heavy' ? 'blur(20px)' 
@@ -265,6 +264,26 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ theme, isDarkMode, c
           </div>
         </div>
       )}
+
+      {/* Animation Speed Demo */}
+      <div className="relative z-10 text-center">
+        <div 
+          className={`inline-block p-3 rounded-full transition-all ${
+            theme.effects.animationSpeed === 'slow' ? 'duration-1000' :
+            theme.effects.animationSpeed === 'normal' ? 'duration-500' :
+            theme.effects.animationSpeed === 'fast' ? 'duration-200' : 'duration-0'
+          } hover:scale-110 hover:rotate-12`}
+          style={{
+            backgroundColor: `hsl(${theme.colors.accent})`,
+            color: `hsl(${colors.text})`
+          }}
+        >
+          <SparklesIcon className="h-6 w-6" />
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">
+          Animation Speed: {theme.effects.animationSpeed}
+        </p>
+      </div>
     </div>
   );
 };

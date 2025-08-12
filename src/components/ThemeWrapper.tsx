@@ -21,7 +21,7 @@ export const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ children, className 
   // For managed themes, apply theme-specific classes and styles
   return (
     <div 
-      className={`${className} theme-${currentTheme.id}`}
+      className={`${className} theme-${currentTheme.id} theme-active`}
       style={{
         '--theme-primary': currentTheme.colors.primary,
         '--theme-primary-glow': currentTheme.colors.primaryGlow,
