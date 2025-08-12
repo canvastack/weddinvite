@@ -115,11 +115,31 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Apply theme to CSS variables
   const applyTheme = (theme: Theme) => {
     if (isDefaultMode || theme.is_default) {
-      // Don't apply any custom variables in default mode
+      // In default mode, ensure proper dark mode handling
+      const root = document.documentElement;
+      
+      // Remove custom theme variables
+      const customProperties = [
+        '--theme-primary', '--theme-primary-glow', '--theme-secondary', '--theme-accent', '--theme-rose-gold',
+        '--theme-background', '--theme-card', '--theme-foreground', '--theme-muted-foreground', '--theme-border',
+        '--theme-font-family', '--theme-heading-font', '--theme-font-size', '--theme-line-height', '--theme-radius', 
+        '--theme-spacing', '--theme-section-padding'
+      ];
+      
+      customProperties.forEach(prop => {
+        root.style.removeProperty(prop);
+      });
+      
+      // Remove theme classes
+      document.body.className = document.body.className.replace(/theme-\w+/g, '');
+      document.body.classList.remove('theme-active');
       return;
     }
 
     const root = document.documentElement;
+    
+    // Add smooth transition
+    root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
     
     // Apply color variables
     root.style.setProperty('--primary', theme.primary_color);
@@ -143,19 +163,29 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Add theme-specific class to body
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     document.body.classList.add(`theme-${theme.id}`, 'theme-active');
+    
+    // Remove transition after applying
+    setTimeout(() => {
+      root.style.transition = '';
+    }, 300);
   };
 
   // Reset to default theme styles
   const resetToDefault = () => {
+    const root = document.documentElement;
+    
+    // Add smooth transition
+    root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    
     setIsDefaultMode(true);
     setCurrentThemeState(DEFAULT_THEME);
     
     // Remove custom CSS variables and theme classes
-    const root = document.documentElement;
     const customProperties = [
-      '--primary', '--primary-glow', '--secondary', '--accent', '--rose-gold',
-      '--background', '--card', '--foreground', '--muted-foreground', '--border',
-      '--font-family', '--font-size', '--radius'
+      '--theme-primary', '--theme-primary-glow', '--theme-secondary', '--theme-accent', '--theme-rose-gold',
+      '--theme-background', '--theme-card', '--theme-foreground', '--theme-muted-foreground', '--theme-border',
+      '--theme-font-family', '--theme-heading-font', '--theme-font-size', '--theme-line-height', '--theme-radius', 
+      '--theme-spacing', '--theme-section-padding'
     ];
     
     customProperties.forEach(prop => {
@@ -164,6 +194,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     document.body.classList.remove('theme-active');
+    
+    // Remove transition after reset
+    setTimeout(() => {
+      root.style.transition = '';
+    }, 300);
   };
 
   const setCurrentTheme = (theme: Theme) => {

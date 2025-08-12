@@ -200,12 +200,6 @@ export const CoupleSection = () => {
           </div>
         </div>
 
-        {/* Enhanced Love Story Section */}
-        <div className="mt-24">
-          <div className="elegant-card bg-card/90 backdrop-blur-md rounded-3xl p-12 md:p-16 max-w-5xl mx-auto border border-primary/10 hover:border-primary/20 transition-all duration-500 group">
-            {/* Love Story content will be handled by LoveStorySection component */}
-          </div>
-        </div>
       </div>
     </section>
   );

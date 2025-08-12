@@ -354,12 +354,23 @@ export const useThemeManager = () => {
   const { toast } = useToast();
 
   // Apply theme to CSS variables
-  const applyTheme = (theme: ThemeConfig, darkMode: boolean = false) => {
+  const applyTheme = (theme: ThemeConfig, darkMode: boolean = false, immediate: boolean = false) => {
     const root = document.documentElement;
     
     // If it's default theme, don't override anything - just handle dark mode
     if (theme.isDefault) {
-      document.documentElement.classList.toggle('dark', darkMode);
+      if (immediate) {
+        document.documentElement.classList.toggle('dark', darkMode);
+      } else {
+        // Smooth transition for dark mode
+        document.documentElement.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+        setTimeout(() => {
+          document.documentElement.classList.toggle('dark', darkMode);
+          setTimeout(() => {
+            document.documentElement.style.transition = '';
+          }, 300);
+        }, 50);
+      }
       // Remove any custom theme classes
       document.body.className = document.body.className.replace(/theme-\w+/g, '');
       document.body.classList.remove('theme-active');
@@ -367,6 +378,11 @@ export const useThemeManager = () => {
     }
 
     const colors = darkMode && theme.darkMode.enabled ? theme.darkMode.colors : theme.colors;
+    
+    // Add smooth transition class
+    if (!immediate) {
+      root.classList.add('theme-transitioning');
+    }
     
     // Apply theme-specific CSS variables (with theme- prefix to avoid conflicts)
     root.style.setProperty('--theme-primary', colors.primary || theme.colors.primary);
@@ -396,7 +412,16 @@ export const useThemeManager = () => {
     document.body.classList.add(`theme-${theme.id}`, 'theme-active');
     
     // Apply dark mode class
-    document.documentElement.classList.toggle('dark', darkMode);
+    if (immediate) {
+      document.documentElement.classList.toggle('dark', darkMode);
+    } else {
+      setTimeout(() => {
+        document.documentElement.classList.toggle('dark', darkMode);
+        setTimeout(() => {
+          root.classList.remove('theme-transitioning');
+        }, 300);
+      }, 50);
+    }
     
     // Override main CSS variables when theme is active (for immediate effect)
     root.style.setProperty('--primary', colors.primary || theme.colors.primary);
@@ -529,10 +554,17 @@ export const useThemeManager = () => {
     setIsDarkMode(newDarkMode);
     
     if (!isDefaultMode) {
-      applyTheme(currentTheme, newDarkMode);
+      applyTheme(currentTheme, newDarkMode, false);
     } else {
-      // Apply dark mode to default theme
-      document.documentElement.classList.toggle('dark', newDarkMode);
+      // Apply dark mode to default theme with smooth transition
+      const root = document.documentElement;
+      root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+      setTimeout(() => {
+        root.classList.toggle('dark', newDarkMode);
+        setTimeout(() => {
+          root.style.transition = '';
+        }, 300);
+      }, 50);
     }
     
     toast({
@@ -596,7 +628,7 @@ export const useThemeManager = () => {
       document.body.className = document.body.className.replace(/theme-\w+/g, '');
       document.body.classList.remove('theme-active');
     } else {
-      applyTheme(currentTheme, isDarkMode);
+      applyTheme(currentTheme, isDarkMode, true);
     }
   }, [currentTheme, isDarkMode, isDefaultMode]);
 
